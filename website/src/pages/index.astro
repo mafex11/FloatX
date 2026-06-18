@@ -1,0 +1,141 @@
+---
+const repo = 'https://github.com/mafex11/FloatX';
+const year = 2026;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>floatX — an ambient shower of x posts</title>
+    <meta
+      name="description"
+      content="floatX floats your x timeline in a small always-on-top window and drips one post at a time. no twitter api, no cost."
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚿</text></svg>" />
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <div class="badge">🚿</div>
+        <h1>floatX</h1>
+        <p class="tag">an ambient shower of x posts, floating on your screen.</p>
+        <p class="sub">
+          it drips one post at a time from your timeline into a small
+          always-on-top window. hover for prev, pause, next. no twitter api, no
+          cost — it just reads the x tab you already have open.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href={`${repo}/releases`}>download</a>
+          <a class="btn ghost" href={repo}>view on github</a>
+        </div>
+        <p class="note">chrome &amp; edge · document picture-in-picture</p>
+      </header>
+
+      <section class="features">
+        <div class="card">
+          <h3>no api, no cost</h3>
+          <p>reads posts straight from your logged-in x tab. nothing to pay for, nothing to authorize.</p>
+        </div>
+        <div class="card">
+          <h3>ambient by design</h3>
+          <p>auto-advances every 1, 5, 15, or 30 minutes. set it and let it drip in the corner while you work.</p>
+        </div>
+        <div class="card">
+          <h3>your controls</h3>
+          <p>hover the window for spotify-style prev / pause / next. filter out replies, reposts, or media-only posts.</p>
+        </div>
+      </section>
+
+      <section class="install">
+        <h2>install</h2>
+        <p class="install-intro">
+          floatX ships unpacked for now. it takes about a minute.
+        </p>
+        <ol>
+          <li>
+            grab the latest zip from <a href={`${repo}/releases`}>releases</a> and
+            unzip it.
+          </li>
+          <li>open <code>chrome://extensions</code> in chrome or edge.</li>
+          <li>turn on <strong>developer mode</strong> (top-right toggle).</li>
+          <li>click <strong>load unpacked</strong> and pick the unzipped folder.</li>
+          <li>open <code>x.com</code>, then click the 🚿 button in the corner.</li>
+        </ol>
+      </section>
+
+      <footer>
+        <p>floatX · {year} · <a href={repo}>github</a></p>
+        <p class="fine">not affiliated with x corp. reads only your own open session.</p>
+      </footer>
+    </main>
+
+    <style>
+      :root {
+        --bg: #000;
+        --fg: #e7e9ea;
+        --muted: #71767b;
+        --line: #2f3336;
+        --blue: #1d9bf0;
+        --card: #16181c;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+      .hero { text-align: center; padding: 96px 0 64px; }
+      .badge {
+        width: 72px; height: 72px; margin: 0 auto 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 38px; border-radius: 9999px; background: var(--blue);
+        box-shadow: 0 8px 30px rgba(29, 155, 240, 0.35);
+      }
+      h1 { font-size: 56px; margin: 0 0 8px; letter-spacing: -0.02em; }
+      .tag { font-size: 22px; margin: 0 auto 16px; max-width: 30ch; }
+      .sub { color: var(--muted); max-width: 56ch; margin: 0 auto 32px; }
+      .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      .btn {
+        display: inline-block; padding: 12px 28px; border-radius: 9999px;
+        font-weight: 700; text-decoration: none; transition: opacity 0.2s, background 0.2s;
+      }
+      .btn.primary { background: var(--blue); color: #fff; }
+      .btn.primary:hover { background: #1a8cd8; }
+      .btn.ghost { border: 1px solid var(--line); color: var(--fg); }
+      .btn.ghost:hover { background: var(--card); }
+      .note { color: var(--muted); font-size: 14px; margin-top: 20px; }
+
+      .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 32px 0; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+      .card h3 { margin: 0 0 8px; font-size: 17px; }
+      .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+      .install { padding: 48px 0; border-top: 1px solid var(--line); margin-top: 32px; }
+      .install h2 { font-size: 28px; margin: 0 0 8px; }
+      .install-intro { color: var(--muted); margin: 0 0 20px; }
+      .install ol { padding-left: 20px; }
+      .install li { margin: 10px 0; }
+      code {
+        background: var(--card); border: 1px solid var(--line);
+        padding: 2px 6px; border-radius: 6px; font-size: 14px;
+      }
+      a { color: var(--blue); }
+
+      footer { border-top: 1px solid var(--line); padding: 32px 0 64px; text-align: center; color: var(--muted); }
+      footer p { margin: 4px 0; }
+      .fine { font-size: 13px; }
+
+      @media (max-width: 640px) {
+        .features { grid-template-columns: 1fr; }
+        h1 { font-size: 42px; }
+        .hero { padding: 64px 0 48px; }
+      }
+    </style>
+  </body>
+</html>

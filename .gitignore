@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# wxt
+.wxt/
+.output/
+stats.html
+
+# website (has its own build artifacts)
+website/node_modules/
+website/dist/
+website/.astro/
+
+# os
+.DS_Store
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
