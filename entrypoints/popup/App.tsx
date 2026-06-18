@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Settings } from '@/lib/types';
-import { getSettings, setSettings, watchSettings, INTERVAL_OPTIONS } from '@/lib/settings';
+import { clampIntervalSec, INTERVAL_MIN_SEC, INTERVAL_MAX_SEC, type Settings } from '@/lib/types';
+import { getSettings, setSettings, watchSettings, INTERVAL_PRESETS } from '@/lib/settings';
 
 type LaunchHint = null | 'use-button' | 'not-on-x';
 
@@ -90,26 +90,30 @@ export function App() {
               <p className="text-xs text-amber-300/90">opening x.com — try again from there.</p>
             )}
 
-            <section className={`space-y-2 rounded-xl p-3 ${glass}`}>
+            <section className={`space-y-2.5 rounded-xl p-3 ${glass}`}>
               <label className="block text-[11px] font-medium uppercase tracking-wider text-white/45">
                 advance every
               </label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {INTERVAL_OPTIONS.map((min) => (
+              <div className="grid grid-cols-5 gap-1.5">
+                {INTERVAL_PRESETS.map((p) => (
                   <button
-                    key={min}
+                    key={p.sec}
                     type="button"
-                    onClick={() => update({ intervalMin: min })}
+                    onClick={() => update({ intervalSec: p.sec })}
                     className={`rounded-lg py-1.5 text-sm font-medium transition ${
-                      settings.intervalMin === min
+                      settings.intervalSec === p.sec
                         ? 'bg-[#1d9bf0] text-white shadow-md shadow-[#1d9bf0]/30'
                         : 'bg-white/[0.04] text-white/70 hover:bg-white/10'
                     }`}
                   >
-                    {min}m
+                    {p.label}
                   </button>
                 ))}
               </div>
+              <IntervalInput
+                value={settings.intervalSec}
+                onCommit={(sec) => update({ intervalSec: sec })}
+              />
             </section>
 
             <section className={`space-y-0.5 rounded-xl p-3 ${glass}`}>
@@ -141,6 +145,46 @@ export function App() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Custom seconds input. Edits freely while typing, clamps + commits on blur/Enter. */
+function IntervalInput({
+  value,
+  onCommit,
+}: {
+  value: number;
+  onCommit: (sec: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(value));
+
+  // Reflect external changes (preset clicks, other contexts) into the field.
+  useEffect(() => setDraft(String(value)), [value]);
+
+  const commit = () => {
+    const n = clampIntervalSec(parseInt(draft, 10));
+    onCommit(n);
+    setDraft(String(n));
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-white/55">custom</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={INTERVAL_MIN_SEC}
+        max={INTERVAL_MAX_SEC}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+        }}
+        className="w-20 rounded-lg border border-white/10 bg-white/[0.06] px-2 py-1.5 text-sm text-white outline-none focus:border-[#1d9bf0]/60"
+      />
+      <span className="text-xs text-white/45">seconds</span>
     </div>
   );
 }

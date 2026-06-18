@@ -33,11 +33,11 @@ async function start() {
   console.log('[FloatX] harvester started');
 
   // Track the live interval so the player can read it on each tick.
-  let intervalMin = settings.intervalMin;
+  let intervalSec = settings.intervalSec;
 
   watchSettings((next) => {
     harvester.updateSettings(next);
-    intervalMin = next.intervalMin;
+    intervalSec = next.intervalSec;
   });
 
   // The bridge the video-PiP player uses to reach the store + settings.
@@ -47,7 +47,7 @@ async function start() {
     current: () => store.current,
     counts: () => ({ queueLength: store.queueLength, historyLength: store.historyLength }),
     onChange: (cb) => store.subscribe(() => cb()),
-    intervalMin: () => intervalMin,
+    intervalSec: () => intervalSec,
   };
 
   const launch = () => {

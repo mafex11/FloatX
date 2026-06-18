@@ -53,8 +53,8 @@ export interface PostFlags {
 
 /** User-configurable settings, persisted in chrome.storage. */
 export interface Settings {
-  /** Minutes between auto-advances. */
-  intervalMin: 1 | 5 | 15 | 30;
+  /** Seconds between auto-advances (custom; clamped to a sane range). */
+  intervalSec: number;
   /** Skip "Replying to" posts. */
   skipReplies: boolean;
   /** Keep reposts/retweets (false = skip them). */
@@ -64,8 +64,17 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  intervalMin: 5,
+  intervalSec: 300, // 5 minutes
   skipReplies: true,
   keepReposts: true,
   keepMediaOnly: true,
 };
+
+/** Allowed interval range, in seconds. */
+export const INTERVAL_MIN_SEC = 3;
+export const INTERVAL_MAX_SEC = 3600;
+
+export function clampIntervalSec(n: number): number {
+  if (!Number.isFinite(n)) return DEFAULT_SETTINGS.intervalSec;
+  return Math.max(INTERVAL_MIN_SEC, Math.min(INTERVAL_MAX_SEC, Math.round(n)));
+}

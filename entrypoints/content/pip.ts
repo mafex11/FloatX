@@ -20,7 +20,7 @@ export interface StoreBridge {
   current: () => Post | null;
   counts: () => { queueLength: number; historyLength: number };
   onChange: (cb: () => void) => () => void;
-  intervalMin: () => number;
+  intervalSec: () => number;
 }
 
 let active: Player | null = null;
@@ -222,7 +222,7 @@ class Player {
 
     if (!this.paused) {
       this.elapsedMs += dt;
-      const intervalMs = this.bridge.intervalMin() * 60_000;
+      const intervalMs = this.bridge.intervalSec() * 1000;
       if (this.elapsedMs >= intervalMs) this.advance();
     }
     this.renderFrame();
@@ -230,7 +230,7 @@ class Player {
   };
 
   private renderFrame(): void {
-    const intervalMs = this.bridge.intervalMin() * 60_000;
+    const intervalMs = this.bridge.intervalSec() * 1000;
     const progress = intervalMs > 0 ? this.elapsedMs / intervalMs : 0;
     this.renderer.render(this.post, progress, this.paused);
   }
