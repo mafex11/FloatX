@@ -6,7 +6,7 @@
  * the shower happens page-side, where the Document-PiP API has the transient
  * user activation it requires:
  *
- *   - the floating 🚿 button injected on x.com (a direct page-context gesture), and
+ *   - the floating FloatX button injected on x.com (a direct page-context gesture), and
  *   - the "open shower" button in the popup, which messages the content script.
  *
  * This worker only handles the housekeeping case: the popup asking us to open

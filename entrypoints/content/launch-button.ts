@@ -1,7 +1,26 @@
 import { onAttention } from './attention';
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Build an X-logo SVG glyph (no emoji), sized to `size` px, in the given fill. */
+function makeXGlyph(size: number, fill: string): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.style.display = 'block';
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute(
+    'd',
+    'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+  );
+  path.setAttribute('fill', fill);
+  svg.appendChild(path);
+  return svg;
+}
+
 /**
- * Inject the 🚿 FloatX launch button onto x.com.
+ * Inject the FloatX launch button onto x.com.
  *
  * Behavior: a pill at the TOP-CENTER that stays hidden until the user scrolls
  * UP, then slides down into view and auto-hides 5s later. This keeps it out of
@@ -21,12 +40,10 @@ export function mountLaunchButton(onClick: () => void): void {
   const shadow = host.attachShadow({ mode: 'open' });
 
   const btn = document.createElement('button');
-  btn.setAttribute('aria-label', 'Open FloatX shower');
-  btn.title = 'Open FloatX shower';
-  // Build children with safe DOM methods (no innerHTML).
-  const icon = document.createElement('span');
-  icon.textContent = '🚿';
-  icon.style.cssText = 'font-size:18px;line-height:1';
+  btn.setAttribute('aria-label', 'Open FloatX');
+  btn.title = 'Open FloatX';
+  // Brand X glyph as inline SVG (no emoji), built with safe DOM methods.
+  const icon = makeXGlyph(16, '#1d9bf0');
   const label = document.createElement('span');
   label.textContent = 'FloatX';
   btn.append(icon, label);

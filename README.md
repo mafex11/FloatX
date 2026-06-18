@@ -1,4 +1,4 @@
-# FloatX 🚿
+# FloatX
 
 an ambient shower of x posts, floating on your screen.
 
@@ -27,7 +27,7 @@ authorize.
 2. open `chrome://extensions` in chrome or edge.
 3. turn on **developer mode**.
 4. click **load unpacked** and pick the unzipped folder.
-5. open `x.com`, then click the 🚿 button in the corner (or open the popup and
+5. open `x.com`, then scroll up to reveal the FloatX pill (or open the popup and
    hit **open shower**).
 
 ## develop
