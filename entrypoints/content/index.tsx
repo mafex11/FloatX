@@ -1,10 +1,9 @@
 import { getSettings, watchSettings } from '@/lib/settings';
 import { PostStore } from './store';
 import { Harvester } from './harvester';
-import { openShower } from './pip';
+import { openShower, type StoreBridge } from './pip';
 import { mountLaunchButton } from './launch-button';
 import { pulseAttention } from './attention';
-import type { ShowerApi } from '../pip-app/ShowerApp';
 
 export default defineContentScript({
   matches: ['*://x.com/*', '*://*.x.com/*'],
@@ -35,40 +34,32 @@ async function start() {
 
   // Track the live interval so the player can read it on each tick.
   let intervalMin = settings.intervalMin;
-  const intervalListeners = new Set<() => void>();
 
   watchSettings((next) => {
     harvester.updateSettings(next);
-    if (next.intervalMin !== intervalMin) {
-      intervalMin = next.intervalMin;
-      intervalListeners.forEach((cb) => cb());
-    }
+    intervalMin = next.intervalMin;
   });
 
-  // The bridge the PiP React app uses to reach the store + settings.
-  const api: ShowerApi = {
+  // The bridge the video-PiP player uses to reach the store + settings.
+  const bridge: StoreBridge = {
     next: () => store.next(),
     prev: () => store.prev(),
     current: () => store.current,
     counts: () => ({ queueLength: store.queueLength, historyLength: store.historyLength }),
     onChange: (cb) => store.subscribe(() => cb()),
     intervalMin: () => intervalMin,
-    onIntervalChange: (cb) => {
-      intervalListeners.add(cb);
-      return () => intervalListeners.delete(cb);
-    },
   };
 
   const launch = () => {
-    openShower(api).catch((err) => console.error('[FloatX] openShower failed', err));
+    openShower(bridge).catch((err) => console.error('[FloatX] openShower failed', err));
   };
 
-  // Launch surface 1: the popup's "open shower" button messages us. Document-PiP
-  // needs a direct page gesture, which a cross-context message may not carry — so
-  // if the open is rejected, pulse the floating button to point the user there.
+  // Launch surface 1: the popup's "open shower" button messages us. PiP needs a
+  // direct page gesture, which a cross-context message may not carry — so if the
+  // open is rejected, pulse the floating button to point the user there.
   browser.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg?.type !== 'floatx:open') return;
-    openShower(api).then(
+    openShower(bridge).then(
       () => sendResponse({ ok: true }),
       () => {
         pulseAttention();

@@ -18,8 +18,8 @@ export function App() {
     void setSettings(patch);
   };
 
-  // Ask the active tab's content script to open the shower. Document-PiP may
-  // refuse to open from a message (it wants a direct page gesture); in that
+  // Ask the active tab's content script to open the shower. Picture-in-Picture
+  // may refuse to open from a message (it wants a direct page gesture); in that
   // case the content script pulses its floating button and we say so here.
   const openShower = async () => {
     setHint(null);
