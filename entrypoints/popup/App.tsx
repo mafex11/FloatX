@@ -68,22 +68,25 @@ export function App() {
           <div className="py-6 text-center text-sm text-white/50">loading…</div>
         ) : (
           <>
-            <header className="flex items-center gap-2">
-              <XGlyph size={18} className="text-[#1d9bf0]" />
-              <h1 className="text-base font-bold tracking-tight">FloatX</h1>
+            <header className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <XGlyph size={18} className="text-[#1d9bf0]" />
+                <h1 className="text-base font-bold tracking-tight">FloatX</h1>
+              </div>
+              <button
+                type="button"
+                onClick={openShower}
+                title="Open the shower on the current x.com tab"
+                className="rounded-lg border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-white/80 transition hover:bg-white/12"
+              >
+                open
+              </button>
             </header>
 
-            <button
-              type="button"
-              onClick={openShower}
-              className="w-full rounded-xl border border-white/10 bg-[#1d9bf0]/90 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#1d9bf0]/20 backdrop-blur-xl transition hover:bg-[#1d9bf0]"
-            >
-              open shower
-            </button>
             {hint === 'use-button' && (
               <p className="text-xs text-amber-300/90">
-                click the FloatX pill on the page to start (your browser needs a click on x.com
-                itself).
+                use the FloatX pill on the page or press ⌥⇧X — your browser needs a click on x.com
+                itself to start.
               </p>
             )}
             {hint === 'not-on-x' && (
