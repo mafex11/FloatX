@@ -6,6 +6,9 @@ node_modules/
 .output/
 stats.html
 
+# local convenience copy of the build for "load unpacked"
+load-this-folder/
+
 # website (has its own build artifacts)
 website/node_modules/
 website/dist/

@@ -8,12 +8,16 @@ export interface Post {
   handle: string;
   /** Avatar image URL. */
   avatarUrl: string;
+  /** Whether the account shows a verified badge. */
+  verified: boolean;
   /** Full post text (may be empty for media-only posts). */
   text: string;
   /** Attached media in display order. */
   media: PostMedia[];
   /** ISO timestamp string from the <time> element, or "" if absent. */
   timestamp: string;
+  /** Ready-made relative label from X ("23h", "Jun 17"), or "" if absent. */
+  timeDisplay: string;
   /** Canonical link to the post on x.com. */
   permalink: string;
   /** Classification flags used by the filter layer. */

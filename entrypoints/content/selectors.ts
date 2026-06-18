@@ -6,40 +6,39 @@
  * notes what it targets and the fallback strategy.
  *
  * Strategy: prefer stable `data-testid` attributes (X has kept these remarkably
- * consistent) over class names (which are hashed and churn constantly).
+ * consistent) over class names (which are hashed and churn constantly). All
+ * selectors below were verified against the live x.com home timeline DOM.
  */
 
 export const SEL = {
-  /** The scroll container / primary timeline column. */
-  timeline: '[aria-label][role="region"], main[role="main"]',
-
-  /** Each post is a <article data-testid="tweet">. The dedupe + parse unit. */
+  /** Each post is an <article data-testid="tweet">. The dedupe + parse unit. */
   article: 'article[data-testid="tweet"]',
 
-  /** Tweet text body. May be absent on media-only posts. */
+  /** Tweet text body. Absent on media-only posts. */
   tweetText: '[data-testid="tweetText"]',
 
-  /** The User-Name block holds display name + @handle + permalink time. */
+  /** The User-Name block holds the name/handle/permalink anchors. */
   userNameBlock: '[data-testid="User-Name"]',
 
-  /** Avatar container; the <img> inside carries the src. */
-  avatar: '[data-testid="Tweet-User-Avatar"] img',
+  /** Verified badge, scoped within User-Name. */
+  verifiedBadge: '[aria-label="Verified account"]',
 
-  /** <time> element; its parent <a href> is the canonical status permalink. */
+  /** Avatar as an <img> (preferred). */
+  avatarImg: '[data-testid="Tweet-User-Avatar"] img',
+  /** Avatar as a background-image div (lazy-load / off-screen fallback). */
+  avatarBg: '[data-testid="Tweet-User-Avatar"] [style*="background-image"]',
+
+  /** <time> element; carries dateTime + a ready-made relative label ("23h"). */
   time: 'time',
 
   /** Photo attachments. */
   tweetPhoto: '[data-testid="tweetPhoto"] img',
 
-  /** Video player container; poster image lives on a child. */
-  videoPlayer: '[data-testid="videoPlayer"]',
-  videoPoster: '[data-testid="videoPlayer"] video',
+  /** Video: the <video> carries a poster frame; the component wraps the player. */
+  videoEl: '[data-testid="videoComponent"] video, [data-testid="videoPlayer"] video',
+  videoComponent: '[data-testid="videoComponent"], [data-testid="videoPlayer"]',
 
-  /**
-   * Promoted/ad marker. X renders a "Promoted" / "Ad" label inside the post.
-   * There is no dedicated testid, so we scan for the social-context span and
-   * also check the placement marker. See `parser.detectAd`.
-   */
+  /** Promoted / reposted social-context line. */
   socialContext: '[data-testid="socialContext"]',
 } as const;
 

@@ -44,8 +44,8 @@ export async function openShower(api: ShowerApi): Promise<void> {
   }
 
   pipWindow = await window.documentPictureInPicture!.requestWindow({
-    width: 360,
-    height: 420,
+    width: 340,
+    height: 300,
   });
 
   // Inject compiled Tailwind + a couple of base resets into the PiP document.
