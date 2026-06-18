@@ -398,16 +398,28 @@ function drawMedia(
   roundRect(ctx, x, y, w, h, radius);
   ctx.clip();
 
-  const cell = (cx: number, cy: number, cw: number, ch: number, m: (typeof items)[number]) => {
+  const cell = (
+    cx: number,
+    cy: number,
+    cw: number,
+    ch: number,
+    m: (typeof items)[number],
+    fit: 'cover' | 'contain' = 'cover',
+  ) => {
     const img = getImage(m.url);
     ctx.fillStyle = COLORS.placeholder;
     ctx.fillRect(cx, cy, cw, ch);
-    if (img) drawImageCover(ctx, img, cx, cy, cw, ch);
+    if (img) {
+      if (fit === 'contain') drawImageContain(ctx, img, cx, cy, cw, ch);
+      else drawImageCover(ctx, img, cx, cy, cw, ch);
+    }
     if (m.type === 'video') drawPlayBadge(ctx, cx + cw / 2, cy + ch / 2);
   };
 
   if (items.length === 1) {
-    cell(x, y, w, h, items[0]);
+    // Single image: show it FULLY (contain), letterboxed in the box, so nothing
+    // is cropped — even tall/wide images appear whole.
+    cell(x, y, w, h, items[0], 'contain');
   } else if (items.length === 2) {
     const cw = (w - gap) / 2;
     cell(x, y, cw, h, items[0]);
@@ -468,6 +480,35 @@ function drawImageCover(
     sy = (img.naturalHeight - sh) / 2;
   }
   ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+/**
+ * Draw an image with object-fit: contain — the WHOLE image fits inside the box,
+ * centered and letterboxed (no cropping). Used for single-image posts so big
+ * or oddly-shaped images appear fully.
+ */
+function drawImageContain(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const br = w / h;
+  let dw = w;
+  let dh = h;
+  if (ir > br) {
+    // image is wider than box → fit width, letterbox top/bottom
+    dh = w / ir;
+  } else {
+    // image is taller → fit height, letterbox left/right
+    dw = h * ir;
+  }
+  const dx = x + (w - dw) / 2;
+  const dy = y + (h - dh) / 2;
+  ctx.drawImage(img, dx, dy, dw, dh);
 }
 
 function roundRect(
