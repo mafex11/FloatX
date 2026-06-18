@@ -49,6 +49,7 @@ async function start() {
   const api: ShowerApi = {
     next: () => store.next(),
     prev: () => store.prev(),
+    current: () => store.current,
     counts: () => ({ queueLength: store.queueLength, historyLength: store.historyLength }),
     onChange: (cb) => store.subscribe(() => cb()),
     intervalMin: () => intervalMin,

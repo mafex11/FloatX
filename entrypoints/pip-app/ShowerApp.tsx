@@ -8,6 +8,8 @@ export interface ShowerApi {
   next: () => Post | null;
   /** Step back through history. */
   prev: () => Post | null;
+  /** The post at the current cursor (reflects in-place enrichment). */
+  current: () => Post | null;
   /** Current store counts, for enabling/disabling controls. */
   counts: () => { queueLength: number; historyLength: number };
   /** Subscribe to store changes; returns an unsubscribe fn. */
@@ -33,6 +35,16 @@ export function ShowerApp({ api }: { api: ShowerApi }) {
   // Elapsed ms on the current post; reset on every advance.
   const elapsedRef = useRef(0);
   const intervalMsRef = useRef(api.intervalMin() * 60_000);
+
+  // On any store change: refresh counts AND re-read the current post. The latter
+  // is what makes a card update in place when its lazy-loaded avatar/media gets
+  // enriched in by the harvester (same id → new object reference). We only swap
+  // when the reference actually changed, so the timer isn't disturbed.
+  const onStoreChange = useCallback(() => {
+    setCounts(api.counts());
+    const live = api.current();
+    setPost((prev) => (live && live !== prev && live.id === prev?.id ? live : prev));
+  }, [api]);
 
   const refreshCounts = useCallback(() => setCounts(api.counts()), [api]);
 
@@ -61,8 +73,8 @@ export function ShowerApp({ api }: { api: ShowerApi }) {
     if (!post) advance();
   }, [post, advance, counts.queueLength]);
 
-  // React to store changes (new posts harvested, counts shift).
-  useEffect(() => api.onChange(refreshCounts), [api, refreshCounts]);
+  // React to store changes (new posts harvested, counts shift, current enriched).
+  useEffect(() => api.onChange(onStoreChange), [api, onStoreChange]);
 
   // React to interval setting changes live.
   useEffect(

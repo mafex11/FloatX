@@ -6,22 +6,30 @@ import { PostStore } from './store';
 
 /**
  * Watches the live home timeline and feeds parsed, filtered posts into the
- * store. Two mechanisms:
+ * store.
  *
- *  1. MutationObserver — catches articles as X mounts them (on scroll, on new
- *     content). We observe rather than snapshot because the timeline is
- *     virtualized: nodes mount and unmount constantly, and id-keyed dedupe in
- *     the store collapses the inevitable repeats.
+ * The key subtlety (verified against live x.com): X mounts a tweet's TEXT first
+ * and lazy-loads the avatar + media a beat later. So a brand-new article almost
+ * always has empty avatar/media at mount. The harvester therefore does two
+ * things rather than capturing once:
  *
- *  2. Auto-scroll refill — when the queue runs low, gently scroll the page to
- *     coax X into rendering more articles, then (optionally) restore position.
- *     Throttled so it stays light on the real tab.
+ *  1. MutationObserver — catches articles as X mounts them (adds them, usually
+ *     text-only at first).
+ *  2. Periodic enrichment scan — every ENRICH_MS, re-parse every currently
+ *     mounted article and `upsert` it. Once the images have loaded in, this
+ *     enriches the stored post in place, and the player re-renders the card.
+ *
+ * Plus auto-scroll refill when the upcoming queue runs low.
  */
 export class Harvester {
   private observer: MutationObserver | null = null;
   private settings: Settings;
   private refillTimer: number | null = null;
+  private enrichTimer: number | null = null;
   private scanScheduled = false;
+
+  static readonly ENRICH_MS = 1200;
+  static readonly REFILL_MS = 4000;
 
   constructor(
     private store: PostStore,
@@ -34,22 +42,24 @@ export class Harvester {
     this.scanExisting();
     this.observer = new MutationObserver(() => this.scheduleScan());
     this.observer.observe(document.body, { childList: true, subtree: true });
-    // Periodic refill check, independent of the cadence of DOM mutations.
-    this.refillTimer = window.setInterval(() => this.maybeRefill(), 4000);
+    // Re-scan mounted articles so lazy-loaded avatars/images get enriched in.
+    this.enrichTimer = window.setInterval(() => this.scanExisting(), Harvester.ENRICH_MS);
+    // Refill the queue when it runs low.
+    this.refillTimer = window.setInterval(() => this.maybeRefill(), Harvester.REFILL_MS);
   }
 
   stop(): void {
     this.observer?.disconnect();
     this.observer = null;
-    if (this.refillTimer !== null) {
-      window.clearInterval(this.refillTimer);
-      this.refillTimer = null;
+    for (const t of [this.enrichTimer, this.refillTimer]) {
+      if (t !== null) window.clearInterval(t);
     }
+    this.enrichTimer = null;
+    this.refillTimer = null;
   }
 
   updateSettings(next: Settings): void {
     this.settings = next;
-    // Re-scan with new filters so toggling a setting reflects what's on screen.
     this.scheduleScan();
   }
 
@@ -63,13 +73,29 @@ export class Harvester {
     });
   }
 
+  /**
+   * Parse every mounted article and upsert it.
+   *
+   * Gate: a post is only ADDED once it has an avatar. X mounts tweets text-first
+   * and lazy-loads the avatar a beat later, so a just-mounted article is usually
+   * a bare skeleton — capturing it then would freeze an empty, avatar-less card
+   * into the queue (the bug that made the shower show text only). We skip until
+   * the avatar is present. Posts already in the store are still upserted so they
+   * keep enriching (media loading in, text de-truncating) while mounted.
+   */
   private scanExisting(): void {
     const articles = document.querySelectorAll<HTMLElement>(SEL.article);
     articles.forEach((article) => {
       const post = parseArticle(article);
-      if (post && passesFilters(post, this.settings)) {
-        this.store.add(post);
+      if (!post || !passesFilters(post, this.settings)) return;
+      const known = this.store.has(post.id);
+      if (!known) {
+        // Don't add a half-loaded card. Wait for the avatar, and — if the tweet
+        // has photo containers — wait for those images to actually have a src.
+        if (!post.avatarUrl) return;
+        if (mediaStillLoading(article)) return;
       }
+      this.store.upsert(post);
     });
   }
 
@@ -79,9 +105,9 @@ export class Harvester {
   }
 
   /**
-   * Nudge the timeline down to load more, then ease back up. We scroll the
-   * window itself (X's timeline drives off the document scroll). Two small
-   * steps with a pause read more reliably than one big jump.
+   * Nudge the timeline down to load more, then ease back up. Scan repeatedly
+   * with delays so freshly mounted articles get a chance to lazy-load their
+   * media before we (possibly) scroll them out of view.
    */
   private autoScroll(): void {
     const step = window.innerHeight * 0.9;
@@ -89,7 +115,21 @@ export class Harvester {
     window.setTimeout(() => {
       this.scanExisting();
       window.scrollBy({ top: step, behavior: 'smooth' });
-      window.setTimeout(() => this.scanExisting(), 800);
-    }, 800);
+      window.setTimeout(() => this.scanExisting(), 900);
+    }, 900);
   }
+}
+
+/**
+ * True when the article has photo containers but at least one hasn't loaded its
+ * <img> src yet — i.e. media is still lazy-loading. Used to delay first capture
+ * so a post never enters the queue with blank image tiles.
+ */
+function mediaStillLoading(article: HTMLElement): boolean {
+  const containers = article.querySelectorAll(SEL.tweetPhotoContainer).length;
+  if (containers === 0) return false;
+  const loaded = [...article.querySelectorAll<HTMLImageElement>(SEL.tweetPhoto)].filter(
+    (img) => img.src,
+  ).length;
+  return loaded < containers;
 }

@@ -31,7 +31,9 @@ export const SEL = {
   /** <time> element; carries dateTime + a ready-made relative label ("23h"). */
   time: 'time',
 
-  /** Photo attachments. */
+  /** Photo attachment containers (present before their <img> src loads). */
+  tweetPhotoContainer: '[data-testid="tweetPhoto"]',
+  /** Photo attachment images. */
   tweetPhoto: '[data-testid="tweetPhoto"] img',
 
   /** Video: the <video> carries a poster frame; the component wraps the player. */
