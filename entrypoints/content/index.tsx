@@ -51,7 +51,15 @@ async function start() {
   };
 
   const launch = () => {
-    openShower(bridge).catch((err) => console.error('[FloatX] openShower failed', err));
+    console.log('[FloatX] launch clicked; queue=', store.queueLength, 'history=', store.historyLength);
+    openShower(bridge).then(
+      () => console.log('[FloatX] shower opened'),
+      (err) => {
+        console.error('[FloatX] openShower failed:', err);
+        // Surface it — a silent failure on click is the worst UX.
+        alert('FloatX could not open the shower:\n' + (err?.message ?? err));
+      },
+    );
   };
 
   // Launch surface 1: the popup's "open shower" button messages us. PiP needs a

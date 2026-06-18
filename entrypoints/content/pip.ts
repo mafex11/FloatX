@@ -74,13 +74,25 @@ class Player {
   async open(): Promise<void> {
     document.body.appendChild(this.video);
 
-    const stream = this.renderer.canvas.captureStream(30);
-    this.video.srcObject = stream;
-    await this.video.play();
-
-    // Seed with the first post (advance from the live front).
+    // Seed with the first post (advance from the live front) and paint a frame
+    // BEFORE capturing, so the stream has real data immediately.
     this.post = this.bridge.next() ?? this.bridge.current();
     this.renderFrame();
+
+    const stream = this.renderer.canvas.captureStream(30);
+    this.video.srcObject = stream;
+
+    // Wait until the video actually has frame data; requestPictureInPicture()
+    // rejects with "Metadata not loaded" if called too early.
+    await this.video.play();
+    if (this.video.readyState < 2) {
+      await new Promise<void>((resolve) => {
+        const done = () => resolve();
+        this.video.addEventListener('loadeddata', done, { once: true });
+        // Safety timeout so we never hang the open forever.
+        setTimeout(done, 1500);
+      });
+    }
 
     this.setupMediaSession();
 
