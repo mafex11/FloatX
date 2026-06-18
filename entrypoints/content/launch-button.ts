@@ -22,10 +22,10 @@ function makeXGlyph(size: number, fill: string): SVGSVGElement {
 /**
  * Inject the FloatX launch button onto x.com.
  *
- * Behavior: a pill at the TOP-CENTER that stays hidden until the user scrolls
- * UP, then slides down into view and auto-hides 5s later. This keeps it out of
- * the way during normal reading and surfaces it with the natural "I want to do
- * something" gesture of scrolling back up.
+ * Behavior: a glassy pill at the TOP-CENTER. It auto-reveals for ~6s on every
+ * page load (so it's always discoverable), and afterwards surfaces whenever the
+ * user scrolls UP — the natural "I want to do something" gesture. A keyboard
+ * shortcut (Alt+Shift+X) opens the shower instantly from anywhere.
  *
  * Plain DOM in a self-created shadow root — no React, no WXT shadow-UI helper,
  * no web-accessible CSS — so nothing in the build can stop it registering.
@@ -46,9 +46,22 @@ export function mountLaunchButton(onClick: () => void): void {
   const icon = makeXGlyph(16, '#1d9bf0');
   const label = document.createElement('span');
   label.textContent = 'FloatX';
-  btn.append(icon, label);
+  // Subtle keyboard-shortcut hint chip inside the pill.
+  const kbd = document.createElement('span');
+  kbd.textContent = '⌥⇧X';
+  kbd.style.cssText = [
+    'margin-left: 4px',
+    'padding: 2px 6px',
+    'border-radius: 6px',
+    'background: rgba(255,255,255,0.10)',
+    'border: 1px solid rgba(255,255,255,0.12)',
+    'font: 600 11px ui-monospace, SFMono-Regular, Menlo, monospace',
+    'color: rgba(255,255,255,0.65)',
+    'line-height: 1.4',
+  ].join(';');
+  btn.append(icon, label, kbd);
   // Hidden state = nudged up off-screen + transparent. Shown = slid down.
-  // Liquid-glass dark: translucent dark fill, backdrop blur, hairline highlight.
+  // Liquid-glass dark: very translucent fill, heavy backdrop blur, hairline edge.
   btn.style.cssText = [
     'position: fixed',
     'top: 72px',
@@ -57,19 +70,19 @@ export function mountLaunchButton(onClick: () => void): void {
     'display: flex',
     'align-items: center',
     'gap: 8px',
-    'padding: 10px 18px',
+    'padding: 10px 16px',
     'border-radius: 9999px',
-    'border: 1px solid rgba(255,255,255,0.14)',
+    'border: 1px solid rgba(255,255,255,0.16)',
     'cursor: pointer',
-    'background: rgba(22,24,28,0.55)',
-    '-webkit-backdrop-filter: blur(22px) saturate(180%)',
-    'backdrop-filter: blur(22px) saturate(180%)',
+    'background: rgba(20,22,26,0.32)',
+    '-webkit-backdrop-filter: blur(32px) saturate(180%)',
+    'backdrop-filter: blur(32px) saturate(180%)',
     'color: #f2f4f7',
     'font: 600 14px system-ui, -apple-system, sans-serif',
-    'box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+    'box-shadow: 0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)',
     'opacity: 0',
     'pointer-events: none',
-    'transition: transform 0.28s cubic-bezier(0.2,0.8,0.2,1), opacity 0.28s ease',
+    'transition: transform 0.32s cubic-bezier(0.2,0.8,0.2,1), opacity 0.32s ease',
   ].join(';');
 
   btn.addEventListener('click', onClick);
@@ -77,7 +90,7 @@ export function mountLaunchButton(onClick: () => void): void {
   document.body.appendChild(host);
 
   let hideTimer: number | undefined;
-  const HIDE_AFTER = 5000;
+  const HIDE_AFTER = 6000;
 
   const show = () => {
     btn.style.transform = 'translate(-50%, 0)';
@@ -93,6 +106,11 @@ export function mountLaunchButton(onClick: () => void): void {
     btn.style.pointerEvents = 'none';
   };
 
+  // Auto-reveal on every page load so the pill is always discoverable, then it
+  // settles into the scroll-up behavior below. Double rAF so the entry slide
+  // animates from the hidden state rather than snapping.
+  requestAnimationFrame(() => requestAnimationFrame(show));
+
   // Reveal on scroll UP only. Use a small threshold so tiny jitters don't trip it.
   let lastY = window.scrollY;
   window.addEventListener(
@@ -104,6 +122,14 @@ export function mountLaunchButton(onClick: () => void): void {
     },
     { passive: true },
   );
+
+  // Keyboard shortcut: Alt+Shift+X opens the shower from anywhere on x.com.
+  window.addEventListener('keydown', (e) => {
+    if (e.altKey && e.shiftKey && (e.code === 'KeyX' || e.key.toLowerCase() === 'x')) {
+      e.preventDefault();
+      onClick();
+    }
+  });
 
   // Keep it visible (reset the timer) while the pointer is over it.
   btn.addEventListener('mouseenter', () => window.clearTimeout(hideTimer));

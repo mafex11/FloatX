@@ -135,7 +135,8 @@ export function App() {
             </section>
 
             <footer className="px-1 text-[11px] leading-relaxed text-white/35">
-              scroll up on x.com to reveal the FloatX pill, or use the toolbar icon.
+              on x.com the FloatX pill shows on load and on scroll-up. shortcut:{' '}
+              <span className="rounded bg-white/10 px-1 py-0.5 font-mono text-white/55">⌥⇧X</span>
             </footer>
           </>
         )}
