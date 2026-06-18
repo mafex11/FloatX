@@ -47,6 +47,7 @@ export function parseArticle(article: HTMLElement): Post | null {
   const timeEl = statusAnchor?.querySelector('time') ?? article.querySelector(SEL.time);
   const timestamp = timeEl?.dateTime ?? '';
   const timeDisplay = timeEl?.textContent?.trim() ?? '';
+  const engagement = extractEngagement(article);
 
   const flags = {
     isAd: detectAd(article),
@@ -65,8 +66,32 @@ export function parseArticle(article: HTMLElement): Post | null {
     media,
     timestamp,
     timeDisplay,
+    engagement,
     permalink,
     flags,
+  };
+}
+
+/**
+ * Engagement counts as X's abbreviated display strings ("6", "1.8K", "23K").
+ * Each action button's textContent already holds the abbreviated count; the
+ * views count lives in the analytics link.
+ */
+function extractEngagement(article: HTMLElement): {
+  replies: string;
+  reposts: string;
+  likes: string;
+  views: string;
+} {
+  const count = (sel: string): string => {
+    const t = article.querySelector<HTMLElement>(sel)?.textContent?.trim() ?? '';
+    return t; // empty when zero / not rendered
+  };
+  return {
+    replies: count(SEL.reply),
+    reposts: count(SEL.repost),
+    likes: count(SEL.like),
+    views: count(SEL.viewsLink),
   };
 }
 

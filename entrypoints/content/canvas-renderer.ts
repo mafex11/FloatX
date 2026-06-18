@@ -113,6 +113,14 @@ export function createCanvasRenderer(): CanvasRenderer {
 
     y += avSize + 12;
 
+    // Reserve a bottom strip for the engagement row + progress bar so media and
+    // text never overlap it.
+    const hasEngagement =
+      !!post.engagement &&
+      !!(post.engagement.replies || post.engagement.reposts || post.engagement.likes || post.engagement.views);
+    const engagementH = hasEngagement ? 26 : 0;
+    const contentBottom = CARD_H - pad - engagementH - 4;
+
     // --- body text ---
     const hasMedia = post.media.some((m) => m.url);
     if (post.text) {
@@ -128,8 +136,13 @@ export function createCanvasRenderer(): CanvasRenderer {
     // --- media ---
     if (hasMedia) {
       const mediaY = y;
-      const mediaH = CARD_H - mediaY - pad - 4;
+      const mediaH = contentBottom - mediaY;
       if (mediaH > 40) drawMedia(ctx, post, pad, mediaY, CARD_W - pad * 2, mediaH);
+    }
+
+    // --- engagement row ---
+    if (hasEngagement) {
+      drawEngagement(ctx, post.engagement, pad, CARD_H - pad - 10, CARD_W - pad * 2);
     }
 
     drawProgressBar(ctx, progress, paused);
@@ -167,6 +180,96 @@ function drawBackground(ctx: CanvasRenderingContext2D) {
   ctx.strokeStyle = 'rgba(255,255,255,0.07)';
   ctx.lineWidth = 1;
   ctx.strokeRect(0.5, 0.5, CARD_W - 1, CARD_H - 1);
+}
+
+/**
+ * Engagement row: reply / repost / like / views, each a small line-drawn icon
+ * followed by its abbreviated count, spread across the bottom of the card.
+ */
+function drawEngagement(
+  ctx: CanvasRenderingContext2D,
+  e: { replies: string; reposts: string; likes: string; views: string },
+  x: number,
+  baselineY: number,
+  width: number,
+) {
+  type Icon = (ctx: CanvasRenderingContext2D, cx: number, cy: number) => void;
+  const items: [Icon, string][] = [
+    [iconReply, e.replies || '0'],
+    [iconRepost, e.reposts || '0'],
+    [iconLike, e.likes || '0'],
+    [iconViews, e.views || '0'],
+  ];
+  const colW = width / items.length;
+  ctx.font = '500 12px system-ui, sans-serif';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < items.length; i++) {
+    const [icon, value] = items[i];
+    const cx = x + colW * i;
+    ctx.strokeStyle = COLORS.muted;
+    ctx.fillStyle = COLORS.muted;
+    ctx.lineWidth = 1.4;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    icon(ctx, cx + 6, baselineY);
+    ctx.fillStyle = COLORS.muted;
+    ctx.fillText(value, cx + 19, baselineY + 1);
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+
+/** Small line-drawn engagement icons, ~12px, centered on (cx, cy). */
+function iconReply(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx - 6, cy - 5);
+  ctx.lineTo(cx + 6, cy - 5);
+  ctx.lineTo(cx + 6, cy + 2);
+  ctx.lineTo(cx - 2, cy + 2);
+  ctx.lineTo(cx - 6, cy + 6);
+  ctx.closePath();
+  ctx.stroke();
+}
+function iconRepost(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  // two arrows: top-right, bottom-left
+  ctx.beginPath();
+  ctx.moveTo(cx - 5, cy - 1);
+  ctx.lineTo(cx - 5, cy - 4);
+  ctx.lineTo(cx + 4, cy - 4);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + 2, cy - 6);
+  ctx.lineTo(cx + 5, cy - 4);
+  ctx.lineTo(cx + 2, cy - 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + 5, cy + 1);
+  ctx.lineTo(cx + 5, cy + 4);
+  ctx.lineTo(cx - 4, cy + 4);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - 2, cy + 6);
+  ctx.lineTo(cx - 5, cy + 4);
+  ctx.lineTo(cx - 2, cy + 2);
+  ctx.stroke();
+}
+function iconLike(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + 5);
+  ctx.bezierCurveTo(cx - 7, cy, cx - 5, cy - 6, cx, cy - 2);
+  ctx.bezierCurveTo(cx + 5, cy - 6, cx + 7, cy, cx, cy + 5);
+  ctx.closePath();
+  ctx.stroke();
+}
+function iconViews(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  // ascending bars
+  ctx.beginPath();
+  ctx.moveTo(cx - 5, cy + 5);
+  ctx.lineTo(cx - 5, cy + 1);
+  ctx.moveTo(cx - 1, cy + 5);
+  ctx.lineTo(cx - 1, cy - 2);
+  ctx.moveTo(cx + 3, cy + 5);
+  ctx.lineTo(cx + 3, cy - 5);
+  ctx.stroke();
 }
 
 /** Thin countdown bar pinned to the bottom edge. */

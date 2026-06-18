@@ -177,6 +177,18 @@ function mergePost(existing: Post, incoming: Post): Post {
     next.timeDisplay = incoming.timeDisplay;
     changed = true;
   }
+  // Engagement loads in slightly after mount and ticks up over time; take the
+  // incoming set whenever it carries any non-empty count the existing one lacks
+  // or differs on.
+  const e = existing.engagement;
+  const n = incoming.engagement;
+  if (n && (!e || n.replies !== e.replies || n.reposts !== e.reposts || n.likes !== e.likes || n.views !== e.views)) {
+    // Only upgrade when incoming actually has data (avoid clobbering with blanks).
+    if (n.replies || n.reposts || n.likes || n.views) {
+      next.engagement = n;
+      changed = true;
+    }
+  }
 
   return changed ? next : existing;
 }

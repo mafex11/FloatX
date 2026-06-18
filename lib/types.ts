@@ -18,6 +18,8 @@ export interface Post {
   timestamp: string;
   /** Ready-made relative label from X ("23h", "Jun 17"), or "" if absent. */
   timeDisplay: string;
+  /** Engagement counts as X's abbreviated display strings ("6", "1.8K", ""). */
+  engagement: Engagement;
   /** Canonical link to the post on x.com. */
   permalink: string;
   /** Classification flags used by the filter layer. */
@@ -28,6 +30,14 @@ export interface PostMedia {
   type: 'image' | 'video';
   /** For video this is the poster/thumbnail image. */
   url: string;
+}
+
+/** Engagement counts, kept as X's abbreviated display strings ("1.8K", "23K"). */
+export interface Engagement {
+  replies: string;
+  reposts: string;
+  likes: string;
+  views: string;
 }
 
 export interface PostFlags {

@@ -42,6 +42,13 @@ export const SEL = {
 
   /** Promoted / reposted social-context line. */
   socialContext: '[data-testid="socialContext"]',
+
+  /** Engagement action buttons; their textContent is X's abbreviated count. */
+  reply: '[data-testid="reply"]',
+  repost: '[data-testid="retweet"]',
+  like: '[data-testid="like"]',
+  /** Views: the analytics link in the action row. */
+  viewsLink: 'a[href$="/analytics"]',
 } as const;
 
 /**
