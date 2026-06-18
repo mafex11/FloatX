@@ -9,6 +9,9 @@ stats.html
 # local convenience copy of the build for "load unpacked"
 load-this-folder/
 
+# packaged zip is regenerable via `pnpm zip`
+store-assets/*.zip
+
 # website (has its own build artifacts)
 website/node_modules/
 website/dist/
