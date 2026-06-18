@@ -43,19 +43,19 @@ export function mountLaunchButton(onClick: () => void): void {
   btn.setAttribute('aria-label', 'Open FloatX');
   btn.title = 'Open FloatX';
   // Brand X glyph as inline SVG (no emoji), built with safe DOM methods.
-  const icon = makeXGlyph(16, '#1d9bf0');
+  const icon = makeXGlyph(20, '#1d9bf0');
   const label = document.createElement('span');
   label.textContent = 'FloatX';
   // Subtle keyboard-shortcut hint chip inside the pill.
   const kbd = document.createElement('span');
   kbd.textContent = '⌥⇧X';
   kbd.style.cssText = [
-    'margin-left: 4px',
-    'padding: 2px 6px',
-    'border-radius: 6px',
+    'margin-left: 6px',
+    'padding: 3px 8px',
+    'border-radius: 7px',
     'background: rgba(255,255,255,0.10)',
     'border: 1px solid rgba(255,255,255,0.12)',
-    'font: 600 11px ui-monospace, SFMono-Regular, Menlo, monospace',
+    'font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace',
     'color: rgba(255,255,255,0.65)',
     'line-height: 1.4',
   ].join(';');
@@ -64,13 +64,13 @@ export function mountLaunchButton(onClick: () => void): void {
   // Liquid-glass dark: very translucent fill, heavy backdrop blur, hairline edge.
   btn.style.cssText = [
     'position: fixed',
-    'top: 72px',
+    'top: 76px',
     'left: 50%',
     'transform: translate(-50%, -200%)',
     'display: flex',
     'align-items: center',
-    'gap: 8px',
-    'padding: 10px 16px',
+    'gap: 11px',
+    'padding: 14px 24px',
     'border-radius: 9999px',
     'border: 1px solid rgba(255,255,255,0.16)',
     'cursor: pointer',
@@ -78,8 +78,8 @@ export function mountLaunchButton(onClick: () => void): void {
     '-webkit-backdrop-filter: blur(32px) saturate(180%)',
     'backdrop-filter: blur(32px) saturate(180%)',
     'color: #f2f4f7',
-    'font: 600 14px system-ui, -apple-system, sans-serif',
-    'box-shadow: 0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)',
+    'font: 600 17px system-ui, -apple-system, sans-serif',
+    'box-shadow: 0 10px 38px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.22)',
     'opacity: 0',
     'pointer-events: none',
     'transition: transform 0.32s cubic-bezier(0.2,0.8,0.2,1), opacity 0.32s ease',
