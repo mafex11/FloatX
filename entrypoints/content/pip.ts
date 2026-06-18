@@ -60,6 +60,7 @@ class Player {
   private lastTs = 0;
   private rafId = 0;
   private unsubscribe: (() => void) | null = null;
+  private audioCtx: AudioContext | null = null;
 
   constructor(private bridge: StoreBridge) {
     const video = document.createElement('video');
@@ -80,6 +81,13 @@ class Player {
     this.renderFrame();
 
     const stream = this.renderer.canvas.captureStream(30);
+
+    // Add a SILENT audio track. Without audio, Chrome never marks the media
+    // session "active", so the PiP overlay shows default ±15s seek buttons and
+    // ignores our prev/next/pause handlers. A muted oscillator track activates
+    // the session, swapping in the previous/next-track buttons we wire below.
+    this.addSilentAudio(stream);
+
     this.video.srcObject = stream;
 
     // Wait until the video actually has frame data; requestPictureInPicture()
@@ -108,6 +116,27 @@ class Player {
 
     await this.video.requestPictureInPicture();
     this.loop(performance.now());
+  }
+
+  /** Attach a muted oscillator as a silent audio track to activate the session. */
+  private addSilentAudio(stream: MediaStream): void {
+    try {
+      const Ctx: typeof AudioContext =
+        window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0; // silent
+      const dest = ctx.createMediaStreamDestination();
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start();
+      const track = dest.stream.getAudioTracks()[0];
+      if (track) stream.addTrack(track);
+      this.audioCtx = ctx;
+    } catch {
+      // If audio can't be created, PiP still works — just with default controls.
+    }
   }
 
   private setupMediaSession(): void {
@@ -187,6 +216,8 @@ class Player {
     stream?.getTracks().forEach((t) => t.stop());
     this.video.srcObject = null;
     this.video.remove();
+    this.audioCtx?.close().catch(() => {});
+    this.audioCtx = null;
     if ('mediaSession' in navigator) {
       for (const a of ['nexttrack', 'previoustrack', 'pause', 'play'] as const) {
         try {
