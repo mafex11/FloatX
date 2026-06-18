@@ -4,6 +4,9 @@ import { getSettings, setSettings, watchSettings, INTERVAL_OPTIONS } from '@/lib
 
 type LaunchHint = null | 'use-button' | 'not-on-x';
 
+// Liquid-glass dark tokens, shared across the popup surfaces.
+const glass = 'border border-white/10 bg-white/[0.06] backdrop-blur-xl';
+
 export function App() {
   const [settings, setLocal] = useState<Settings | null>(null);
   const [hint, setHint] = useState<LaunchHint>(null);
@@ -42,81 +45,89 @@ export function App() {
     }
   };
 
-  if (!settings) {
-    return <div className="w-72 bg-black p-4 text-sm text-neutral-400">loading…</div>;
-  }
-
   return (
-    <div className="w-72 space-y-4 bg-black p-4 font-sans text-white">
-      <header className="flex items-center gap-2">
-        <span className="text-lg">🚿</span>
-        <h1 className="text-base font-bold">FloatX</h1>
-      </header>
+    <div className="relative w-72 overflow-hidden font-sans text-white">
+      {/* Ambient gradient backdrop behind the glass. */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_20%_0%,#1d3a5f_0%,#0a0d12_55%,#000_100%)]" />
+      <div className="pointer-events-none absolute -left-10 top-8 h-32 w-32 rounded-full bg-[#1d9bf0]/25 blur-3xl" />
 
-      <button
-        type="button"
-        onClick={openShower}
-        className="w-full rounded-lg bg-[#1d9bf0] py-2 text-sm font-semibold text-white transition hover:bg-[#1a8cd8]"
-      >
-        open shower
-      </button>
-      {hint === 'use-button' && (
-        <p className="-mt-2 text-xs text-amber-400">
-          click the 🚿 button on the page to start (your browser needs a click on
-          x.com itself).
-        </p>
-      )}
-      {hint === 'not-on-x' && (
-        <p className="-mt-2 text-xs text-amber-400">opening x.com — try again from there.</p>
-      )}
+      <div className="relative space-y-3.5 p-4">
+        {!settings ? (
+          <div className="py-6 text-center text-sm text-white/50">loading…</div>
+        ) : (
+          <>
+            <header className="flex items-center gap-2">
+              <span className="text-lg">🚿</span>
+              <h1 className="text-base font-bold tracking-tight">FloatX</h1>
+            </header>
 
-      <section className="space-y-2">
-        <label className="block text-xs uppercase tracking-wide text-neutral-400">
-          advance every
-        </label>
-        <div className="grid grid-cols-4 gap-1.5">
-          {INTERVAL_OPTIONS.map((min) => (
             <button
-              key={min}
               type="button"
-              onClick={() => update({ intervalMin: min })}
-              className={`rounded-md py-1.5 text-sm font-medium transition ${
-                settings.intervalMin === min
-                  ? 'bg-[#1d9bf0] text-white'
-                  : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-              }`}
+              onClick={openShower}
+              className="w-full rounded-xl border border-white/10 bg-[#1d9bf0]/90 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#1d9bf0]/20 backdrop-blur-xl transition hover:bg-[#1d9bf0]"
             >
-              {min}m
+              open shower
             </button>
-          ))}
-        </div>
-      </section>
+            {hint === 'use-button' && (
+              <p className="text-xs text-amber-300/90">
+                click the 🚿 pill on the page to start (your browser needs a click on x.com
+                itself).
+              </p>
+            )}
+            {hint === 'not-on-x' && (
+              <p className="text-xs text-amber-300/90">opening x.com — try again from there.</p>
+            )}
 
-      <section className="space-y-1">
-        <span className="block text-xs uppercase tracking-wide text-neutral-400">
-          filters
-        </span>
-        <Toggle
-          label="skip replies"
-          checked={settings.skipReplies}
-          onChange={(v) => update({ skipReplies: v })}
-        />
-        <Toggle
-          label="keep reposts"
-          checked={settings.keepReposts}
-          onChange={(v) => update({ keepReposts: v })}
-        />
-        <Toggle
-          label="keep media-only posts"
-          checked={settings.keepMediaOnly}
-          onChange={(v) => update({ keepMediaOnly: v })}
-        />
-        <p className="pt-1 text-xs text-neutral-500">ads are always skipped.</p>
-      </section>
+            <section className={`space-y-2 rounded-xl p-3 ${glass}`}>
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-white/45">
+                advance every
+              </label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {INTERVAL_OPTIONS.map((min) => (
+                  <button
+                    key={min}
+                    type="button"
+                    onClick={() => update({ intervalMin: min })}
+                    className={`rounded-lg py-1.5 text-sm font-medium transition ${
+                      settings.intervalMin === min
+                        ? 'bg-[#1d9bf0] text-white shadow-md shadow-[#1d9bf0]/30'
+                        : 'bg-white/[0.04] text-white/70 hover:bg-white/10'
+                    }`}
+                  >
+                    {min}m
+                  </button>
+                ))}
+              </div>
+            </section>
 
-      <footer className="border-t border-neutral-800 pt-3 text-xs text-neutral-500">
-        open x.com, then click the 🚿 button or the toolbar icon.
-      </footer>
+            <section className={`space-y-0.5 rounded-xl p-3 ${glass}`}>
+              <span className="block pb-1 text-[11px] font-medium uppercase tracking-wider text-white/45">
+                filters
+              </span>
+              <Toggle
+                label="skip replies"
+                checked={settings.skipReplies}
+                onChange={(v) => update({ skipReplies: v })}
+              />
+              <Toggle
+                label="keep reposts"
+                checked={settings.keepReposts}
+                onChange={(v) => update({ keepReposts: v })}
+              />
+              <Toggle
+                label="keep media-only posts"
+                checked={settings.keepMediaOnly}
+                onChange={(v) => update({ keepMediaOnly: v })}
+              />
+              <p className="pt-1.5 text-xs text-white/35">ads are always skipped.</p>
+            </section>
+
+            <footer className="px-1 text-[11px] leading-relaxed text-white/35">
+              scroll up on x.com to reveal the 🚿 pill, or use the toolbar icon.
+            </footer>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -132,18 +143,18 @@ function Toggle({
 }) {
   return (
     <label className="flex cursor-pointer items-center justify-between py-1.5">
-      <span className="text-sm">{label}</span>
+      <span className="text-sm text-white/85">{label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative h-5 w-9 rounded-full transition ${
-          checked ? 'bg-[#1d9bf0]' : 'bg-neutral-700'
+        className={`relative h-5 w-9 rounded-full border transition ${
+          checked ? 'border-transparent bg-[#1d9bf0]' : 'border-white/10 bg-white/10'
         }`}
       >
         <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${
+          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
             checked ? 'left-[18px]' : 'left-0.5'
           }`}
         />

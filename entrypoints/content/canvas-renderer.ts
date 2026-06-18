@@ -26,7 +26,7 @@ const COLORS = {
   text: '#e7e9ea',
   muted: '#71767b',
   accent: '#1d9bf0',
-  placeholder: '#2f3336',
+  placeholder: 'rgba(255,255,255,0.06)',
 };
 
 /** Cache of loaded images by url. Value is null while loading or on failure. */
@@ -66,8 +66,7 @@ export function createCanvasRenderer(): CanvasRenderer {
   ctx.scale(SCALE, SCALE);
 
   const render = (post: Post | null, progress: number, paused: boolean) => {
-    ctx.fillStyle = COLORS.bg;
-    ctx.fillRect(0, 0, CARD_W, CARD_H);
+    drawBackground(ctx);
 
     if (!post) {
       drawIdle(ctx);
@@ -137,6 +136,37 @@ export function createCanvasRenderer(): CanvasRenderer {
   };
 
   return { canvas, render };
+}
+
+/**
+ * Liquid-glass dark background: a deep vertical gradient with a soft blue glow
+ * top-left, a hairline highlight along the top edge, and a subtle inner border —
+ * the canvas approximation of a frosted-glass panel (real backdrop-blur isn't
+ * available on a captured canvas).
+ */
+function drawBackground(ctx: CanvasRenderingContext2D) {
+  // Base gradient.
+  const g = ctx.createLinearGradient(0, 0, 0, CARD_H);
+  g.addColorStop(0, '#15191f');
+  g.addColorStop(1, '#0a0c10');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+
+  // Soft accent glow, top-left.
+  const glow = ctx.createRadialGradient(40, 0, 0, 40, 0, 220);
+  glow.addColorStop(0, 'rgba(29,155,240,0.20)');
+  glow.addColorStop(1, 'rgba(29,155,240,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+
+  // Top hairline highlight.
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(0, 0, CARD_W, 1);
+
+  // Subtle inner border.
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, CARD_W - 1, CARD_H - 1);
 }
 
 /** Thin countdown bar pinned to the bottom edge. */

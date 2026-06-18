@@ -31,22 +31,25 @@ export function mountLaunchButton(onClick: () => void): void {
   label.textContent = 'FloatX';
   btn.append(icon, label);
   // Hidden state = nudged up off-screen + transparent. Shown = slid down.
+  // Liquid-glass dark: translucent dark fill, backdrop blur, hairline highlight.
   btn.style.cssText = [
     'position: fixed',
-    'top: 14px',
+    'top: 72px',
     'left: 50%',
-    'transform: translate(-50%, -150%)',
+    'transform: translate(-50%, -200%)',
     'display: flex',
     'align-items: center',
     'gap: 8px',
-    'padding: 9px 16px',
+    'padding: 10px 18px',
     'border-radius: 9999px',
-    'border: none',
+    'border: 1px solid rgba(255,255,255,0.14)',
     'cursor: pointer',
-    'background: #1d9bf0',
-    'color: #fff',
+    'background: rgba(22,24,28,0.55)',
+    '-webkit-backdrop-filter: blur(22px) saturate(180%)',
+    'backdrop-filter: blur(22px) saturate(180%)',
+    'color: #f2f4f7',
     'font: 600 14px system-ui, -apple-system, sans-serif',
-    'box-shadow: 0 6px 20px rgba(0,0,0,0.35)',
+    'box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
     'opacity: 0',
     'pointer-events: none',
     'transition: transform 0.28s cubic-bezier(0.2,0.8,0.2,1), opacity 0.28s ease',
@@ -68,7 +71,7 @@ export function mountLaunchButton(onClick: () => void): void {
   };
 
   const hide = () => {
-    btn.style.transform = 'translate(-50%, -150%)';
+    btn.style.transform = 'translate(-50%, -200%)';
     btn.style.opacity = '0';
     btn.style.pointerEvents = 'none';
   };
@@ -92,11 +95,12 @@ export function mountLaunchButton(onClick: () => void): void {
   });
 
   // Surface it when the popup couldn't open the shower itself (no activation).
+  const glassShadow = '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)';
   onAttention(() => {
     show();
-    btn.style.boxShadow = '0 0 0 5px rgba(29,155,240,0.35), 0 6px 20px rgba(0,0,0,0.35)';
+    btn.style.boxShadow = `0 0 0 5px rgba(29,155,240,0.4), ${glassShadow}`;
     setTimeout(() => {
-      btn.style.boxShadow = '0 6px 20px rgba(0,0,0,0.35)';
+      btn.style.boxShadow = glassShadow;
     }, 1800);
   });
 }
