@@ -26,10 +26,13 @@ export class Harvester {
   private settings: Settings;
   private refillTimer: number | null = null;
   private enrichTimer: number | null = null;
+  private feedTimer: number | null = null;
   private scanScheduled = false;
+  private feedKey = '';
 
   static readonly ENRICH_MS = 1200;
   static readonly REFILL_MS = 4000;
+  static readonly FEED_CHECK_MS = 600;
 
   constructor(
     private store: PostStore,
@@ -39,6 +42,7 @@ export class Harvester {
   }
 
   start(): void {
+    this.feedKey = currentFeedKey();
     this.scanExisting();
     this.observer = new MutationObserver(() => this.scheduleScan());
     this.observer.observe(document.body, { childList: true, subtree: true });
@@ -46,16 +50,34 @@ export class Harvester {
     this.enrichTimer = window.setInterval(() => this.scanExisting(), Harvester.ENRICH_MS);
     // Refill the queue when it runs low.
     this.refillTimer = window.setInterval(() => this.maybeRefill(), Harvester.REFILL_MS);
+    // Watch for feed switches (For you / Following / community / list / profile).
+    this.feedTimer = window.setInterval(() => this.checkFeedChange(), Harvester.FEED_CHECK_MS);
   }
 
   stop(): void {
     this.observer?.disconnect();
     this.observer = null;
-    for (const t of [this.enrichTimer, this.refillTimer]) {
+    for (const t of [this.enrichTimer, this.refillTimer, this.feedTimer]) {
       if (t !== null) window.clearInterval(t);
     }
     this.enrichTimer = null;
     this.refillTimer = null;
+    this.feedTimer = null;
+  }
+
+  /**
+   * If the user switched feeds, reset the store so the shower only holds posts
+   * from the feed that's now open. The feed identity is the URL path plus the
+   * selected timeline tab (For you / Following / a community), since X swaps
+   * tabs without changing the URL.
+   */
+  private checkFeedChange(): void {
+    const key = currentFeedKey();
+    if (key !== this.feedKey) {
+      this.feedKey = key;
+      this.store.clear();
+      this.scanExisting();
+    }
   }
 
   updateSettings(next: Settings): void {
@@ -118,6 +140,20 @@ export class Harvester {
       window.setTimeout(() => this.scanExisting(), 900);
     }, 900);
   }
+}
+
+/**
+ * A stable identifier for the currently-open feed. Combines the URL path (which
+ * covers /home, lists, communities, profiles, search) with the selected
+ * timeline tab label (For you / Following / a community pinned on /home, which
+ * X switches without changing the URL).
+ */
+function currentFeedKey(): string {
+  const selectedTab =
+    document
+      .querySelector('[role="tablist"] [role="tab"][aria-selected="true"]')
+      ?.textContent?.trim() ?? '';
+  return `${location.pathname}::${selectedTab}`;
 }
 
 /**

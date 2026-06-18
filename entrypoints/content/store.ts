@@ -64,6 +64,18 @@ export class PostStore {
     return 'enriched';
   }
 
+  /**
+   * Drop everything and start fresh. Used when the user switches feeds (For you
+   * → Following → a community) so the shower only ever holds posts from the feed
+   * that's currently open.
+   */
+  clear(): void {
+    this.posts = [];
+    this.indexById.clear();
+    this.cursor = -1;
+    this.emit();
+  }
+
   /** Whether a post with this id is already stored. */
   has(id: string): boolean {
     return this.indexById.has(id);
