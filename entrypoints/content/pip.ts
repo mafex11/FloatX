@@ -114,6 +114,13 @@ class Player {
 
     this.video.addEventListener('leavepictureinpicture', () => this.destroy(), { once: true });
 
+    // The video element must never actually stay paused — that freezes the live
+    // canvas stream permanently. If the browser's pause button pauses it, resume
+    // immediately; our logical "pause" only stops the countdown, not the stream.
+    this.video.addEventListener('pause', () => {
+      this.video.play().catch(() => {});
+    });
+
     await this.video.requestPictureInPicture();
     this.loop(performance.now());
   }
@@ -142,13 +149,27 @@ class Player {
   private setupMediaSession(): void {
     if (!('mediaSession' in navigator)) return;
     const ms = navigator.mediaSession;
-    try {
-      ms.setActionHandler('nexttrack', () => this.advance());
-      ms.setActionHandler('previoustrack', () => this.goPrev());
-      ms.setActionHandler('pause', () => this.setPaused(true));
-      ms.setActionHandler('play', () => this.setPaused(false));
-    } catch {
-      // Some actions may be unsupported; ignore.
+
+    // Map every "advance" style action to next, every "rewind" style to prev.
+    // Browsers differ on which buttons they render (some show next/prev track,
+    // others show seek forward/back) — wiring all of them means the buttons do
+    // the right thing regardless of which set the browser decides to show.
+    const setNext = () => this.advance();
+    const setPrev = () => this.goPrev();
+    const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ['nexttrack', setNext],
+      ['previoustrack', setPrev],
+      ['seekforward', setNext],
+      ['seekbackward', setPrev],
+      ['pause', () => this.togglePause()],
+      ['play', () => this.togglePause()],
+    ];
+    for (const [action, handler] of handlers) {
+      try {
+        ms.setActionHandler(action, handler);
+      } catch {
+        // Action unsupported in this browser — skip it.
+      }
     }
     this.updateMetadata();
   }
@@ -183,8 +204,14 @@ class Player {
     }
   }
 
-  private setPaused(v: boolean): void {
-    this.paused = v;
+  /**
+   * Toggle the LOGICAL pause (the countdown), never the video element. The
+   * video must keep playing or the live canvas stream freezes and can't recover
+   * — which is what made the play/pause button get stuck. A `pause` listener on
+   * the element (set in open()) force-resumes if the browser pauses it for us.
+   */
+  private togglePause(): void {
+    this.paused = !this.paused;
     this.updateMetadata();
   }
 
@@ -219,7 +246,15 @@ class Player {
     this.audioCtx?.close().catch(() => {});
     this.audioCtx = null;
     if ('mediaSession' in navigator) {
-      for (const a of ['nexttrack', 'previoustrack', 'pause', 'play'] as const) {
+      const actions: MediaSessionAction[] = [
+        'nexttrack',
+        'previoustrack',
+        'seekforward',
+        'seekbackward',
+        'pause',
+        'play',
+      ];
+      for (const a of actions) {
         try {
           navigator.mediaSession.setActionHandler(a, null);
         } catch {
