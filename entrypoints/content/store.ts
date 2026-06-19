@@ -43,6 +43,12 @@ export class PostStore {
   static readonly QUEUE_LOW_WATER = 8;
 
   /**
+   * Fires with a post whenever it's added or enriched. Used to forward posts to
+   * the native Mac app bridge (background worker → WebSocket). Not for rendering.
+   */
+  onUpsert?: (post: Post, result: UpsertResult) => void;
+
+  /**
    * Add a new post, or enrich an existing one with better data. Returns what
    * happened so the harvester can avoid pointless churn.
    */
@@ -52,6 +58,7 @@ export class PostStore {
       this.indexById.set(post.id, this.posts.length);
       this.posts.push(post);
       this.emit();
+      this.onUpsert?.(post, 'added');
       return 'added';
     }
 
@@ -61,6 +68,7 @@ export class PostStore {
 
     this.posts[existingIdx] = merged;
     this.emit();
+    this.onUpsert?.(merged, 'enriched');
     return 'enriched';
   }
 

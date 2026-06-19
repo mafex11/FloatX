@@ -19,15 +19,20 @@ final class WSServer {
     var onPost: ((Post) -> Void)?
     var onStatus: ((String) -> Void)?
 
+    private func log(_ s: String) {
+        FileHandle.standardError.write(Data("[FloatX/WS] \(s)\n".utf8))
+        onStatus?(s)
+    }
+
     func start() {
         for port in Self.ports {
             if tryListen(on: port) {
                 boundPort = port
-                onStatus?("listening on \(port)")
+                log("listening on \(port)")
                 return
             }
         }
-        onStatus?("no free port")
+        log("no free port")
     }
 
     private func tryListen(on port: UInt16) -> Bool {
@@ -46,7 +51,7 @@ final class WSServer {
         }
         l.stateUpdateHandler = { [weak self] state in
             if case .failed = state {
-                Task { @MainActor in self?.onStatus?("listener failed on \(port)") }
+                Task { @MainActor in self?.log("listener failed on \(port)") }
             }
         }
         l.start(queue: .main)
@@ -56,7 +61,7 @@ final class WSServer {
 
     private func accept(_ conn: NWConnection) {
         connections.append(conn)
-        onStatus?("extension connected")
+        log("extension connected")
         conn.start(queue: .main)
         receive(on: conn)
     }
@@ -73,7 +78,7 @@ final class WSServer {
                     self.receive(on: conn) // keep reading
                 } else {
                     self.connections.removeAll { $0 === conn }
-                    self.onStatus?("extension disconnected")
+                    self.log("extension disconnected")
                 }
             }
         }
@@ -82,11 +87,15 @@ final class WSServer {
     private func handle(_ data: Data) {
         do {
             let post = try JSONDecoder().decode(Post.self, from: data)
+            log("post: @\(post.handle) \(post.text.prefix(30))")
             onPost?(post)
         } catch {
             // Could be a batch array; try that before giving up.
             if let posts = try? JSONDecoder().decode([Post].self, from: data) {
+                log("batch: \(posts.count) posts")
                 posts.forEach { onPost?($0) }
+            } else {
+                log("decode failed: \(error)")
             }
         }
     }

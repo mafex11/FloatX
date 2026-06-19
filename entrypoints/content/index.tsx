@@ -28,6 +28,17 @@ async function start() {
   const settings = await getSettings();
 
   const store = new PostStore();
+
+  // Forward harvested posts to the native Mac app via the background worker
+  // (which owns the localhost WebSocket; the page itself can't open one).
+  store.onUpsert = (post) => {
+    try {
+      void browser.runtime.sendMessage({ type: 'floatx:post', post });
+    } catch {
+      /* worker asleep or extension reloading; harmless */
+    }
+  };
+
   const harvester = new Harvester(store, settings);
   harvester.start();
   console.log('[FloatX] harvester started');
