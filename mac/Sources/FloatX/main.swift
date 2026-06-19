@@ -9,6 +9,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var panel: GlassPanel?
     private var loginWindow: LoginWindow?
+    private var feedWindow: FeedWindow?
     private var status = "starting…"
     private var loggedIn = false
 
@@ -34,19 +35,27 @@ final class AppController: NSObject, NSApplicationDelegate {
 
     /// After each navigation settles, decide whether we still need login.
     private var promptedLogin = false
+    private var loginPoll: Timer?
+
     private func afterNavigation() {
         harvester.checkLoginState { [weak self] loggedIn in
             guard let self else { return }
-            self.loggedIn = loggedIn
-            if loggedIn {
-                self.status = "harvesting"
-                // Auto-close the sign-in window the moment login is detected.
-                self.loginWindow?.close()
-                self.loginWindow = nil
-            } else if !self.promptedLogin {
+            self.applyLoginState(loggedIn)
+            if !loggedIn && !self.promptedLogin {
                 self.promptedLogin = true
                 self.showLogin()
             }
+        }
+    }
+
+    private func applyLoginState(_ loggedIn: Bool) {
+        self.loggedIn = loggedIn
+        if loggedIn {
+            status = "harvesting"
+            // Auto-close the sign-in window the moment login is detected.
+            stopLoginPoll()
+            loginWindow?.close()
+            loginWindow = nil
         }
     }
 
@@ -54,11 +63,30 @@ final class AppController: NSObject, NSApplicationDelegate {
         let w = LoginWindow(webView: harvester.webView)
         w.onClosed = { [weak self] in
             self?.promptedLogin = false // allow re-prompt if they bailed
+            self?.stopLoginPoll()
         }
         loginWindow = w
         w.present()
         status = "sign in to X to begin"
-        rebuildMenu()
+        // X completes login via SPA routing (no full navigation), so didFinish
+        // won't re-fire. Poll login state while the window is open and auto-close
+        // the instant we're in.
+        startLoginPoll()
+    }
+
+    private func startLoginPoll() {
+        stopLoginPoll()
+        loginPoll = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.loginWindow != nil else { return }
+                self.harvester.checkLoginState { ok in if ok { self.applyLoginState(true) } }
+            }
+        }
+    }
+
+    private func stopLoginPoll() {
+        loginPoll?.invalidate()
+        loginPoll = nil
     }
 
     // MARK: menu-bar
@@ -103,6 +131,7 @@ final class AppController: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
 
         menu.addItem(withTitle: "Show / hide widget", action: #selector(togglePanel), keyEquivalent: "f").target = self
+        menu.addItem(withTitle: "Open X feed…", action: #selector(openFeed), keyEquivalent: "x").target = self
 
         let desktop = NSMenuItem(title: "Desktop mode (pin to wallpaper)",
                                  action: #selector(toggleDesktopMode), keyEquivalent: "")
@@ -183,6 +212,11 @@ final class AppController: NSObject, NSApplicationDelegate {
 
     @objc private func openLogin() {
         if loginWindow == nil { showLogin() } else { loginWindow?.present() }
+    }
+
+    @objc private func openFeed() {
+        if feedWindow == nil { feedWindow = FeedWindow() }
+        feedWindow?.present()
     }
 
     @objc private func signOut() {

@@ -12,7 +12,7 @@ final class Harvester: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
     var onPost: ((Post) -> Void)?
     var onStatus: ((String) -> Void)?
 
-    private static let store = WKWebsiteDataStore.default() // persistent: keeps login
+    static let store = WKWebsiteDataStore.default() // persistent: keeps login (shared)
 
     override init() {
         let cfg = WKWebViewConfiguration()
