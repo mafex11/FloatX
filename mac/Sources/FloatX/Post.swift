@@ -11,8 +11,21 @@ struct Post: Codable, Identifiable, Equatable {
     var text: String
     var media: [Media]
     var timeDisplay: String
+    var timestamp: String   // ISO 8601, e.g. "2026-06-19T12:34:56.000Z"
     var engagement: Engagement
     var permalink: String
+
+    /// "Jun 19, 2026 · 6:04 PM" from the ISO timestamp, or "" if unparseable.
+    var absoluteDate: String {
+        guard !timestamp.isEmpty else { return "" }
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let date = iso.date(from: timestamp) ?? ISO8601DateFormatter().date(from: timestamp)
+        guard let date else { return "" }
+        let f = DateFormatter()
+        f.dateFormat = "MMM d, yyyy · h:mm a"
+        return f.string(from: date)
+    }
 
     struct Media: Codable, Equatable {
         enum Kind: String, Codable { case image, video }
@@ -32,6 +45,6 @@ struct Post: Codable, Identifiable, Equatable {
     /// Map the extension's camelCase keys; tolerate missing optionals.
     enum CodingKeys: String, CodingKey {
         case id, author, handle, avatarURL = "avatarUrl", verified, text, media
-        case timeDisplay, engagement, permalink
+        case timeDisplay, timestamp, engagement, permalink
     }
 }

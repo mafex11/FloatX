@@ -15,6 +15,19 @@ final class PostStore: ObservableObject {
 
     private let historyMax = 50
 
+    var canAdvance: Bool { cursor + 1 < posts.count }
+    var canBack: Bool { cursor > 0 }
+
+    /// Wipe everything (used on sign-out).
+    func clearAll() {
+        posts.removeAll()
+        indexByID.removeAll()
+        cursor = -1
+        current = nil
+        queueCount = 0
+        historyCount = 0
+    }
+
     func upsert(_ post: Post) {
         if let idx = indexByID[post.id] {
             let merged = Self.merge(posts[idx], post)

@@ -7,7 +7,10 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "FloatX",
-            path: "Sources/FloatX"
+            path: "Sources/FloatX",
+            // harvester.js is embedded via HarvesterScript.swift (generated from
+            // Resources/harvester.js); exclude the raw file from the build.
+            exclude: ["Resources/harvester.js"]
         )
     ]
 )
