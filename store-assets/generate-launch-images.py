@@ -210,4 +210,37 @@ settings = f'''<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http
 </svg>'''
 render('03-settings', settings)
 
+# ---------- Scene 4: no API / how it works ----------
+def feat(y, title, sub):
+    return (f'<text x="150" y="{y}" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="#f2f4f7">{title}</text>'
+            f'<text x="150" y="{y+30}" font-family="system-ui,sans-serif" font-size="19" font-weight="500" fill="#8b98a5">{sub}</text>')
+howitworks = f'''<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">{DEFS}
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <rect width="1280" height="800" fill="url(#glowL)"/>
+  <text x="150" y="180" font-family="system-ui,sans-serif" font-size="54" font-weight="800" fill="#f2f4f7" letter-spacing="-1">no API. no cost.</text>
+  <text x="150" y="224" font-family="system-ui,sans-serif" font-size="24" font-weight="500" fill="#8b98a5">it reads the x.com tab you already have open.</text>
+  <g>
+    <rect x="150" y="280" width="56" height="4" rx="2" fill="#1d9bf0"/>
+  </g>
+  {feat(330,'reads your own session','nothing leaves your browser. no server, no tracking.')}
+  {feat(420,'faithful tweet cards','avatar, name, text, images, and engagement.')}
+  {feat(510,'reflects the feed you open','For you, Following, or any community.')}
+  {feat(600,'launch in a tap','scroll-up pill, toolbar popup, or ⌥⇧X.')}
+</svg>'''
+render('04-howitworks', howitworks)
+
+# ---------- Scene 5: feed-aware ----------
+feedaware = f'''<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">{DEFS}
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <rect width="1280" height="800" fill="url(#glowR)"/>
+  <text x="96" y="356" font-family="system-ui,sans-serif" font-size="56" font-weight="800" fill="#f2f4f7" letter-spacing="-1">always your feed</text>
+  <text x="98" y="402" font-family="system-ui,sans-serif" font-size="25" font-weight="500" fill="#8b98a5">switch to Following or a community —</text>
+  <text x="98" y="438" font-family="system-ui,sans-serif" font-size="25" font-weight="500" fill="#8b98a5">the shower follows what you're viewing.</text>
+  <g transform="translate(760,240)" filter="url(#shadow)">
+    <g clip-path="url(#cardclip)">{card("Mafex","devmafex","1d","just shipped feed-aware mode. open Following and the shower switches with you. clean.",0.35)}</g>
+    <rect x="0.5" y="0.5" width="359" height="319" rx="20" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  </g>
+</svg>'''
+render('05-feed', feedaware)
+
 print("done")
