@@ -7,17 +7,16 @@ type LaunchHint = null | 'use-button' | 'not-on-x';
 // Liquid-glass dark tokens, shared across the popup surfaces.
 const glass = 'border border-white/10 bg-white/[0.06] backdrop-blur-xl';
 
-/** FloatX logo mark — a floating post card + avatar dot + accent bar. */
+/** FloatX logo mark — the X glyph above a blue auto-advance bar. */
 function Logo({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-      <g transform="rotate(-7 12 11)">
-        <rect x="2.5" y="3" width="19" height="14" rx="4" fill="#eef4f9" />
-        <circle cx="7.5" cy="8.5" r="2.1" fill="#1d9bf0" />
-        <rect x="11" y="6.6" width="7.5" height="1.6" rx="0.8" fill="#9fb2c4" />
-        <rect x="11" y="10" width="5" height="1.6" rx="0.8" fill="#c4d2de" />
-      </g>
-      <rect x="5" y="20" width="14" height="2" rx="1" fill="#1d9bf0" />
+      <path
+        transform="translate(2.4,0) scale(0.8)"
+        fill="#f2f4f7"
+        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+      />
+      <rect x="5" y="21.2" width="14" height="2" rx="1" fill="#1d9bf0" />
     </svg>
   );
 }

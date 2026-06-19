@@ -78,21 +78,16 @@ def card_inner(post, progress):
     return ''.join(p)
 
 def logo(cx,cy,scale,opacity):
-    # floating post card logo centered at (cx,cy), tile ~ 128 units * scale
+    # X-mark logo on glass tile (128-unit), centered at (cx,cy), scaled.
     s=scale
     return f'''<g transform="translate({cx},{cy}) scale({s}) translate(-64,-64)" opacity="{opacity:.3f}">
       <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#cardbg)"/>
       <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#cardglow)"/>
       <rect x="10.5" y="10.5" width="107" height="107" rx="27.5" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5"/>
-      <rect x="34" y="44" width="60" height="44" rx="11" fill="#ffffff" opacity="0.10"/>
-      <g transform="rotate(-7 64 60)">
-        <rect x="30" y="36" width="68" height="50" rx="12" fill="#eef4f9"/>
-        <circle cx="44" cy="50" r="6" fill="#1d9bf0"/>
-        <rect x="55" y="46" width="32" height="4.5" rx="2.25" fill="#9fb2c4"/>
-        <rect x="55" y="55" width="22" height="4.5" rx="2.25" fill="#c4d2de"/>
-        <rect x="38" y="68" width="52" height="4.5" rx="2.25" fill="#c9d6e2"/>
+      <g transform="translate(64,58) scale(3.0) translate(-12,-12)">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#f2f4f7"/>
       </g>
-      <rect x="40" y="100" width="48" height="5" rx="2.5" fill="#1d9bf0"/>
+      <rect x="40" y="98" width="48" height="6" rx="3" fill="#1d9bf0"/>
     </g>'''
 
 def ctrl_buttons(opacity):

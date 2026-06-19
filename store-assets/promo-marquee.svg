@@ -24,15 +24,10 @@
   <g transform="translate(120,196)">
     <rect width="168" height="168" rx="40" fill="url(#tile)"/>
     <rect x="0.5" y="0.5" width="167" height="167" rx="39.5" fill="none" stroke="url(#hair)" stroke-width="2"/>
-    <rect x="46" y="58" width="78" height="58" rx="13" fill="#ffffff" opacity="0.10"/>
-    <g transform="rotate(-7 84 80)">
-      <rect x="40" y="48" width="88" height="64" rx="16" fill="#eef4f9"/>
-      <circle cx="60" cy="68" r="8" fill="#1d9bf0"/>
-      <rect x="74" y="62" width="42" height="6" rx="3" fill="#9fb2c4"/>
-      <rect x="74" y="74" width="28" height="6" rx="3" fill="#c4d2de"/>
-      <rect x="50" y="92" width="66" height="6" rx="3" fill="#c9d6e2"/>
+    <g transform="translate(84,74) scale(3.6) translate(-12,-12)">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#f2f4f7"/>
     </g>
-    <rect x="50" y="134" width="68" height="7" rx="3.5" fill="#1d9bf0"/>
+    <rect x="50" y="130" width="68" height="7" rx="3.5" fill="#1d9bf0"/>
   </g>
 
   <text x="340" y="270" font-family="-apple-system, system-ui, sans-serif" font-size="84" font-weight="800" fill="#f2f4f7" letter-spacing="-2">FloatX</text>

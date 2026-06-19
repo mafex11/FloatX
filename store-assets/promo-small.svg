@@ -21,19 +21,14 @@
   <rect width="440" height="280" fill="url(#bg)"/>
   <rect width="440" height="280" fill="url(#glow)"/>
 
-  <!-- glass tile with floating post card -->
+  <!-- glass tile with X + auto-advance bar -->
   <g transform="translate(40,84)">
     <rect width="112" height="112" rx="28" fill="url(#tile)"/>
     <rect x="0.5" y="0.5" width="111" height="111" rx="27.5" fill="none" stroke="url(#hair)" stroke-width="1.5"/>
-    <rect x="30" y="40" width="52" height="38" rx="9" fill="#ffffff" opacity="0.10"/>
-    <g transform="rotate(-7 56 52)">
-      <rect x="26" y="32" width="60" height="44" rx="11" fill="#eef4f9"/>
-      <circle cx="40" cy="46" r="5.5" fill="#1d9bf0"/>
-      <rect x="50" y="42" width="28" height="4" rx="2" fill="#9fb2c4"/>
-      <rect x="50" y="50" width="19" height="4" rx="2" fill="#c4d2de"/>
-      <rect x="34" y="62" width="44" height="4" rx="2" fill="#c9d6e2"/>
+    <g transform="translate(56,50) scale(2.4) translate(-12,-12)">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#f2f4f7"/>
     </g>
-    <rect x="34" y="90" width="44" height="5" rx="2.5" fill="#1d9bf0"/>
+    <rect x="34" y="86" width="44" height="5" rx="2.5" fill="#1d9bf0"/>
   </g>
 
   <!-- wordmark + tagline -->
