@@ -7,7 +7,14 @@
 | `store-icon-128.png` | 128×128 | Store icon |
 | `promo-small-440x280.png` | 440×280 | Small promo tile |
 | `promo-marquee-1400x560.png` | 1400×560 | Marquee promo (optional) |
-| `screenshot-1280x800.png` | 1280×800 | Screenshot (≥1 required) |
+| `screenshot-1280x800.png` | 1280×800 | Screenshot (legacy single) |
+| `launch/01-hero.png` | 1280×800 | Screenshot 1 — hero + PiP card |
+| `launch/02-controls.png` | 1280×800 | Screenshot 2 — hover controls |
+| `launch/03-settings.png` | 1280×800 | Screenshot 3 — settings/customization |
+
+Use the three `launch/*.png` as the listing screenshot carousel (in order).
+They reproduce the real extension UI. Regenerate with
+`python3 generate-launch-images.py` (needs rsvg-convert).
 
 Packaged extension zip: `../.output/floatx-0.1.0-chrome.zip`
 
