@@ -11,9 +11,11 @@ struct CardView: View {
     @ObservedObject var store: PostStore
     @ObservedObject var player: Player
     @ObservedObject var settings = Settings.shared
+    @ObservedObject var translations: TranslationStore
     var onReload: () -> Void = {}
     var onLike: (String) -> Void = { _ in }
     var onRepost: (String) -> Void = { _ in }
+    var onTranslate: (String) -> Void = { _ in }
 
     // Persisted per-tweet so the liked/reposted state stays filled after tapping.
     @State private var liked: Set<String> = []
@@ -51,14 +53,20 @@ struct CardView: View {
         // More text lines fit as the widget grows.
         let maxLines = post.media.contains(where: { !$0.url.isEmpty })
             ? Int(3 * scale) : Int(8 * scale)
+        let showingTranslation = translations.isShowing(post.id)
+        let bodyText = showingTranslation ? (translations.text(for: post.id) ?? post.text) : post.text
         return VStack(alignment: .leading, spacing: 9 * scale) {
             header(post)
             if !post.text.isEmpty {
-                Text(post.text)
+                Text(bodyText)
                     .font(.system(size: 15 * scale))
                     .foregroundStyle(.primary)
                     .lineLimit(maxLines)
                     .fixedSize(horizontal: false, vertical: true)
+                if showingTranslation {
+                    Text("Translated by X")
+                        .font(.system(size: 11)).foregroundStyle(.tertiary)
+                }
             }
             mediaArea(post)
             metaRow(post)
@@ -121,6 +129,22 @@ struct CardView: View {
                        tint: .pink, active: liked.contains(post.id)) {
                 toggle(&liked, post.id); onLike(post.id)
             }
+            // Translate — only for non-English tweets.
+            if post.foreign {
+                Button {
+                    if translations.toggle(post.id) { onTranslate(post.id) }
+                } label: {
+                    Image(systemName: translations.isPending(post.id) ? "globe.badge.chevron.backward" : "globe")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(translations.isShowing(post.id) ? Color(red: 0.11, green: 0.61, blue: 0.94) : .secondary)
+                        .frame(width: 26, height: 26)
+                        .contentShape(Rectangle())
+                        .symbolEffect(.pulse, isActive: translations.isPending(post.id))
+                }
+                .buttonStyle(.plain)
+                .help(translations.isShowing(post.id) ? "Show original" : "Translate")
+                .hoverHighlight()
+            }
             Spacer(minLength: 6)
             iconButton("arrow.clockwise", help: "Reload timeline", action: onReload)
             iconButton("arrow.up.right.square", help: "Open tweet in browser") { openTweet(post) }
@@ -133,14 +157,41 @@ struct CardView: View {
     }
 
     /// Optimistically show count +1 when the user has liked/reposted. Parses X's
-    /// abbreviated form ("1.2K", "3.4M"); only adjusts plain integers to avoid
-    /// faking precision on abbreviated values (those just keep their string).
+    /// abbreviated form ("1.2K", "3.4M") to an exact number, adds one, and
+    /// re-abbreviates so e.g. "1.2K" → "1.2K" (1201) and "47" → "48".
     private func adjusted(_ value: String, active: Bool) -> String {
         guard active else { return value }
-        let v = value.trimmingCharacters(in: .whitespaces)
-        if v.isEmpty || v == "0" { return "1" }
-        if let n = Int(v) { return String(n + 1) }       // plain integer → +1
-        return v                                         // "1.2K" etc → leave as-is
+        let n = Self.parseCount(value)
+        return Self.abbreviate(n + 1)
+    }
+
+    /// "1.2K" → 1200, "3.4M" → 3_400_000, "47" → 47, "" → 0.
+    static func parseCount(_ s: String) -> Int {
+        let v = s.trimmingCharacters(in: .whitespaces).uppercased()
+        if v.isEmpty { return 0 }
+        let mult: Double
+        let num: Substring
+        if v.hasSuffix("K") { mult = 1_000; num = v.dropLast() }
+        else if v.hasSuffix("M") { mult = 1_000_000; num = v.dropLast() }
+        else if v.hasSuffix("B") { mult = 1_000_000_000; num = v.dropLast() }
+        else { mult = 1; num = v[...] }
+        return Int((Double(num) ?? 0) * mult)
+    }
+
+    /// 1201 → "1.2K", 48 → "48", 3_400_000 → "3.4M".
+    static func abbreviate(_ n: Int) -> String {
+        switch n {
+        case ..<1_000: return String(n)
+        case ..<1_000_000:
+            let k = Double(n) / 1_000
+            return k < 10 ? String(format: "%.1fK", k) : "\(Int(k))K"
+        case ..<1_000_000_000:
+            let m = Double(n) / 1_000_000
+            return m < 10 ? String(format: "%.1fM", m) : "\(Int(m))M"
+        default:
+            let b = Double(n) / 1_000_000_000
+            return b < 10 ? String(format: "%.1fB", b) : "\(Int(b))B"
+        }
     }
 
     // MARK: meta row — absolute date · views (X-style, under the content)
@@ -309,17 +360,36 @@ private struct Avatar: View {
     }
 }
 
-/// Video media: loads X's embed player (a WKWebView) immediately and autoplays
-/// inline — no poster/tap step. Keyed by post id so it reloads on each new post.
+/// Video media: shows the poster image immediately, then fades the embed player
+/// in once it's ready — so there's no blank "blink" while the WKWebView loads.
 private struct VideoArea: View {
     let post: Post
     let posterURL: String
     var onEnded: () -> Void = {}
+    @State private var ready = false
 
     var body: some View {
-        VideoView(tweetID: post.id, onEnded: onEnded)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .id(post.id) // fresh web view per post
+        ZStack {
+            // Poster underneath — visible instantly, covers the embed's load gap.
+            if !posterURL.isEmpty {
+                AsyncImage(url: URL(string: posterURL)) { phase in
+                    if let img = phase.image { img.resizable().scaledToFill() }
+                    else { Color.black }
+                }
+                .overlay(alignment: .center) {
+                    if !ready {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 38)).foregroundStyle(.white.opacity(0.85))
+                    }
+                }
+            } else {
+                Color.black
+            }
+            VideoView(tweetID: post.id, onReady: { ready = true }, onEnded: onEnded)
+                .opacity(ready ? 1 : 0)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .id(post.id) // fresh web view per post
     }
 }
 

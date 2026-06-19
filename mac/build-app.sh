@@ -8,6 +8,18 @@ VERSION="${1:-0.1.0}"
 APP="FloatX.app"
 BUNDLE_ID="dev.mafex.floatx"
 
+# Regenerate the embedded harvester from the source .js so the binary never
+# ships stale behavior (the JS is compiled in via HarvesterScript.swift).
+echo "→ embedding harvester.js"
+{
+  echo '// AUTO-GENERATED from Resources/harvester.js by build-app.sh — do not edit.'
+  echo 'enum HarvesterScript {'
+  printf '    static let source = #"""\n'
+  cat Sources/FloatX/Resources/harvester.js
+  printf '\n"""#\n'
+  echo '}'
+} > Sources/FloatX/HarvesterScript.swift
+
 echo "→ building release binary"
 swift build -c release >/dev/null
 

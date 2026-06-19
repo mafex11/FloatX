@@ -107,9 +107,13 @@
     const isReply = /Replying to/.test(article.innerText.slice(0, 200));
     const isRepost = /reposted/i.test(ctx);
 
+    // Translatable if the text contains non-Latin script (CJK, Hangul, Arabic,
+    // Cyrillic, Thai, etc.) — a good proxy for "show the translate button".
+    const foreign = /[぀-ヿ㐀-鿿가-힯؀-ۿЀ-ӿ฀-๿]/.test(text);
+
     return {
       id, author, handle, avatarUrl, verified, text, media, timeDisplay, timestamp,
-      engagement, permalink,
+      engagement, permalink, foreign,
       flags: { isAd, isReply, isRepost, hasText: text.trim().length > 0 },
     };
   }
@@ -136,6 +140,40 @@
       send('post', p);
     });
   }
+
+  // Translate a tweet by id: click X's "Translate post" control, then read the
+  // translated text X injects. Returns the translation string (async via the
+  // native message handler 'translation' as {id, text}).
+  window.__floatxTranslate = function (id) {
+    const arts = [...document.querySelectorAll(SEL.article)];
+    const art = arts.find((a) => a.querySelector('a[href*="/status/' + id + '"]'));
+    const sendBack = (text) => {
+      try { window.webkit.messageHandlers.translation.postMessage({ id: id, text: text }); } catch (e) {}
+    };
+    if (!art) { sendBack(''); return; }
+
+    // The translate trigger is a button/link labelled "Translate post".
+    const trigger = [...art.querySelectorAll('[role="button"], span, div')]
+      .find((el) => /^Translate post$/i.test((el.textContent || '').trim()));
+    if (trigger) trigger.click();
+
+    // After clicking, X renders the translation under a "Translated from …" note.
+    // Poll for it; fall back to empty if it never appears.
+    let tries = 0;
+    const t = setInterval(() => {
+      const note = [...art.querySelectorAll('div, span')]
+        .find((el) => /^Translated from /i.test((el.textContent || '').trim()));
+      // The translated body is the tweetText AFTER translation completes.
+      const body = art.querySelector(SEL.tweetText);
+      if (note && body) {
+        clearInterval(t);
+        sendBack((body.innerText || '').trim());
+      } else if (++tries > 30) {
+        clearInterval(t);
+        sendBack(body ? (body.innerText || '').trim() : '');
+      }
+    }, 200);
+  };
 
   // Perform a like/repost on a specific tweet by id, by clicking its real
   // button in the timeline DOM. Called from native via evaluateJavaScript.

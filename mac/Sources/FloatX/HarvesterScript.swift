@@ -85,9 +85,17 @@ enum HarvesterScript {
     // Absolute timestamp (ISO) from the <time datetime="..."> attribute.
     const timestamp = timeEl ? (timeEl.getAttribute('datetime') || '') : '';
 
+    // Engagement count for an action button. Prefer the visible abbreviated
+    // number (e.g. "1.2K"); if the button text is empty, fall back to the exact
+    // number embedded in the aria-label ("1234 Likes. Like" / "12 reposts").
     const count = (sel) => {
       const el = article.querySelector(sel);
-      return el ? (el.textContent || '').trim() : '';
+      if (!el) return '';
+      const txt = (el.textContent || '').trim();
+      if (txt) return txt;
+      const label = el.getAttribute('aria-label') || '';
+      const m = label.replace(/,/g, '').match(/([\d.]+\s*[KMB]?)/i);
+      return m ? m[1].replace(/\s+/g, '') : '';
     };
     const engagement = {
       replies: count(SEL.reply),
@@ -102,9 +110,13 @@ enum HarvesterScript {
     const isReply = /Replying to/.test(article.innerText.slice(0, 200));
     const isRepost = /reposted/i.test(ctx);
 
+    // Translatable if the text contains non-Latin script (CJK, Hangul, Arabic,
+    // Cyrillic, Thai, etc.) — a good proxy for "show the translate button".
+    const foreign = /[぀-ヿ㐀-鿿가-힯؀-ۿЀ-ӿ฀-๿]/.test(text);
+
     return {
       id, author, handle, avatarUrl, verified, text, media, timeDisplay, timestamp,
-      engagement, permalink,
+      engagement, permalink, foreign,
       flags: { isAd, isReply, isRepost, hasText: text.trim().length > 0 },
     };
   }
@@ -131,6 +143,40 @@ enum HarvesterScript {
       send('post', p);
     });
   }
+
+  // Translate a tweet by id: click X's "Translate post" control, then read the
+  // translated text X injects. Returns the translation string (async via the
+  // native message handler 'translation' as {id, text}).
+  window.__floatxTranslate = function (id) {
+    const arts = [...document.querySelectorAll(SEL.article)];
+    const art = arts.find((a) => a.querySelector('a[href*="/status/' + id + '"]'));
+    const sendBack = (text) => {
+      try { window.webkit.messageHandlers.translation.postMessage({ id: id, text: text }); } catch (e) {}
+    };
+    if (!art) { sendBack(''); return; }
+
+    // The translate trigger is a button/link labelled "Translate post".
+    const trigger = [...art.querySelectorAll('[role="button"], span, div')]
+      .find((el) => /^Translate post$/i.test((el.textContent || '').trim()));
+    if (trigger) trigger.click();
+
+    // After clicking, X renders the translation under a "Translated from …" note.
+    // Poll for it; fall back to empty if it never appears.
+    let tries = 0;
+    const t = setInterval(() => {
+      const note = [...art.querySelectorAll('div, span')]
+        .find((el) => /^Translated from /i.test((el.textContent || '').trim()));
+      // The translated body is the tweetText AFTER translation completes.
+      const body = art.querySelector(SEL.tweetText);
+      if (note && body) {
+        clearInterval(t);
+        sendBack((body.innerText || '').trim());
+      } else if (++tries > 30) {
+        clearInterval(t);
+        sendBack(body ? (body.innerText || '').trim() : '');
+      }
+    }, 200);
+  };
 
   // Perform a like/repost on a specific tweet by id, by clicking its real
   // button in the timeline DOM. Called from native via evaluateJavaScript.
@@ -171,10 +217,19 @@ enum HarvesterScript {
   obs.observe(document.body, { childList: true, subtree: true });
   setInterval(scan, 1500);
 
-  // Gentle auto-scroll so the feed keeps producing fresh posts even unattended.
-  setInterval(() => {
+  // On-demand scroll to load more posts (called by the app when the widget's
+  // queue runs low — keeps doomscrolling from ever hitting a dead end).
+  window.__floatxScrollMore = function () {
+    window.scrollBy({ top: window.innerHeight * 1.5, behavior: 'smooth' });
+    // Scan a few times as new articles stream in.
+    var n = 0;
+    var t = setInterval(function () { scan(); if (++n > 6) clearInterval(t); }, 350);
+  };
+
+  // Gentle background auto-scroll so the feed keeps producing fresh posts.
+  setInterval(function () {
     window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
-  }, 8000);
+  }, 5000);
 
   send('ready', { url: location.href });
   scan();

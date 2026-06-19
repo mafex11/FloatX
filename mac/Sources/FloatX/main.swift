@@ -5,6 +5,7 @@ import SwiftUI
 final class AppController: NSObject, NSApplicationDelegate {
     private let store = PostStore()
     private let harvester = Harvester()
+    private let translations = TranslationStore()
     private lazy var player = Player(store: store)
     private var statusItem: NSStatusItem!
     private var panel: GlassPanel?
@@ -31,6 +32,8 @@ final class AppController: NSObject, NSApplicationDelegate {
         }
         // Queue running low → scroll the hidden timeline to load more.
         store.onLow = { [weak self] in self?.harvester.requestMore() }
+        // Translation results from X flow back into the store.
+        harvester.onTranslate = { [weak self] id, text in self?.translations.receive(id: id, text: text) }
         harvester.start()
         rebuildMenu()
     }
@@ -110,10 +113,11 @@ final class AppController: NSObject, NSApplicationDelegate {
         } else {
             if panel == nil {
                 panel = GlassPanel(size: Settings.shared.sizePreset.dimensions,
-                                   root: CardView(store: store, player: player,
+                                   root: CardView(store: store, player: player, translations: translations,
                                                   onReload: { [weak self] in self?.harvester.reloadHome() },
                                                   onLike: { [weak self] id in self?.harvester.performAction(id: id, action: "like") },
-                                                  onRepost: { [weak self] id in self?.harvester.performAction(id: id, action: "repost") }))
+                                                  onRepost: { [weak self] id in self?.harvester.performAction(id: id, action: "repost") },
+                                                  onTranslate: { [weak self] id in self?.harvester.translate(id: id) }))
             }
             panel?.setDesktopMode(Settings.shared.desktopMode)
             panel?.makeKeyAndOrderFront(nil)

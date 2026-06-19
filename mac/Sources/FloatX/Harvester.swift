@@ -25,6 +25,7 @@ final class Harvester: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         super.init()
 
         ucc.add(self, name: "floatx")
+        ucc.add(self, name: "translation")
         if let js = Self.harvesterJS() {
             ucc.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
         }
@@ -46,6 +47,14 @@ final class Harvester: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
     /// widget queue runs low so the user never hits a dead end while scrolling.
     func requestMore() {
         webView.evaluateJavaScript("window.__floatxScrollMore && window.__floatxScrollMore()",
+                                   completionHandler: nil)
+    }
+
+    /// Translate a tweet via X's own translation; result arrives on `onTranslate`.
+    var onTranslate: ((_ id: String, _ text: String) -> Void)?
+    func translate(id: String) {
+        let safeID = id.filter { $0.isNumber }
+        webView.evaluateJavaScript("window.__floatxTranslate && window.__floatxTranslate('\(safeID)')",
                                    completionHandler: nil)
     }
 
@@ -82,6 +91,13 @@ final class Harvester: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
 
     // MARK: WKScriptMessageHandler
     func userContentController(_ ucc: WKUserContentController, didReceive message: WKScriptMessage) {
+        // Translation results come on a separate channel with {id, text}.
+        if message.name == "translation",
+           let b = message.body as? [String: Any],
+           let id = b["id"] as? String {
+            onTranslate?(id, (b["text"] as? String) ?? "")
+            return
+        }
         guard let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
         switch type {
         case "ready":

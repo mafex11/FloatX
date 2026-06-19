@@ -9,6 +9,7 @@ import WebKit
 /// fire `onEnded` when it finishes so the shower can advance.
 struct VideoView: NSViewRepresentable {
     let tweetID: String
+    var onReady: () -> Void = {}
     var onEnded: () -> Void = {}
 
     func makeNSView(context: Context) -> WKWebView {
@@ -16,6 +17,7 @@ struct VideoView: NSViewRepresentable {
         cfg.mediaTypesRequiringUserActionForPlayback = []
         let ucc = WKUserContentController()
         ucc.add(context.coordinator, name: "videoEnded")
+        ucc.add(context.coordinator, name: "videoReady")
         cfg.userContentController = ucc
         let wv = WKWebView(frame: .zero, configuration: cfg)
         wv.navigationDelegate = context.coordinator
@@ -38,18 +40,21 @@ struct VideoView: NSViewRepresentable {
         wv.load(URLRequest(url: url))
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator(tweetID: tweetID, onEnded: onEnded) }
+    func makeCoordinator() -> Coordinator { Coordinator(tweetID: tweetID, onReady: onReady, onEnded: onEnded) }
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var loadedID: String?
+        let onReady: () -> Void
         let onEnded: () -> Void
-        init(tweetID: String, onEnded: @escaping () -> Void) {
+        init(tweetID: String, onReady: @escaping () -> Void, onEnded: @escaping () -> Void) {
             self.loadedID = tweetID
+            self.onReady = onReady
             self.onEnded = onEnded
         }
 
         func userContentController(_ ucc: WKUserContentController, didReceive msg: WKScriptMessage) {
             if msg.name == "videoEnded" { Task { @MainActor in onEnded() } }
+            if msg.name == "videoReady" { Task { @MainActor in onReady() } }
         }
 
         // Once the embed builds its <video>: isolate it to fill the frame, mute +
@@ -61,8 +66,14 @@ struct VideoView: NSViewRepresentable {
                 var v = doc.querySelector('video');
                 if (!v) return false;
                 v.muted = true; v.play().catch(function(){});
-                if (!v.__fxEnded) {
-                  v.__fxEnded = true;
+                if (!v.__fxReady) {
+                  v.__fxReady = true;
+                  var notifyReady = function(){
+                    try { window.webkit.messageHandlers.videoReady.postMessage(1); } catch(e){}
+                  };
+                  if (v.readyState >= 2) notifyReady();
+                  else v.addEventListener('loadeddata', notifyReady, { once: true });
+                  v.addEventListener('playing', notifyReady, { once: true });
                   v.addEventListener('ended', function(){
                     try { window.webkit.messageHandlers.videoEnded.postMessage(1); } catch(e){}
                   });

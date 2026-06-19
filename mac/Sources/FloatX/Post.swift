@@ -14,6 +14,7 @@ struct Post: Codable, Identifiable, Equatable {
     var timestamp: String   // ISO 8601, e.g. "2026-06-19T12:34:56.000Z"
     var engagement: Engagement
     var permalink: String
+    var foreign: Bool = false  // text is non-English (CJK etc.) → show translate
 
     /// "Jun 19, 2026 · 6:04 PM" from the ISO timestamp, or "" if unparseable.
     var absoluteDate: String {
@@ -45,6 +46,6 @@ struct Post: Codable, Identifiable, Equatable {
     /// Map the extension's camelCase keys; tolerate missing optionals.
     enum CodingKeys: String, CodingKey {
         case id, author, handle, avatarURL = "avatarUrl", verified, text, media
-        case timeDisplay, timestamp, engagement, permalink
+        case timeDisplay, timestamp, engagement, permalink, foreign
     }
 }
