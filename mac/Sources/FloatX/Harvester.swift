@@ -42,6 +42,13 @@ final class Harvester: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         load("https://x.com/home")
     }
 
+    /// Ask the hidden timeline to scroll and load more posts. Called when the
+    /// widget queue runs low so the user never hits a dead end while scrolling.
+    func requestMore() {
+        webView.evaluateJavaScript("window.__floatxScrollMore && window.__floatxScrollMore()",
+                                   completionHandler: nil)
+    }
+
     /// Perform a like/repost on a tweet in-place, by clicking its real button in
     /// the hidden timeline. `action` is "like" or "repost".
     func performAction(id: String, action: String) {

@@ -82,9 +82,17 @@
     // Absolute timestamp (ISO) from the <time datetime="..."> attribute.
     const timestamp = timeEl ? (timeEl.getAttribute('datetime') || '') : '';
 
+    // Engagement count for an action button. Prefer the visible abbreviated
+    // number (e.g. "1.2K"); if the button text is empty, fall back to the exact
+    // number embedded in the aria-label ("1234 Likes. Like" / "12 reposts").
     const count = (sel) => {
       const el = article.querySelector(sel);
-      return el ? (el.textContent || '').trim() : '';
+      if (!el) return '';
+      const txt = (el.textContent || '').trim();
+      if (txt) return txt;
+      const label = el.getAttribute('aria-label') || '';
+      const m = label.replace(/,/g, '').match(/([\d.]+\s*[KMB]?)/i);
+      return m ? m[1].replace(/\s+/g, '') : '';
     };
     const engagement = {
       replies: count(SEL.reply),
@@ -168,10 +176,19 @@
   obs.observe(document.body, { childList: true, subtree: true });
   setInterval(scan, 1500);
 
-  // Gentle auto-scroll so the feed keeps producing fresh posts even unattended.
-  setInterval(() => {
+  // On-demand scroll to load more posts (called by the app when the widget's
+  // queue runs low — keeps doomscrolling from ever hitting a dead end).
+  window.__floatxScrollMore = function () {
+    window.scrollBy({ top: window.innerHeight * 1.5, behavior: 'smooth' });
+    // Scan a few times as new articles stream in.
+    var n = 0;
+    var t = setInterval(function () { scan(); if (++n > 6) clearInterval(t); }, 350);
+  };
+
+  // Gentle background auto-scroll so the feed keeps producing fresh posts.
+  setInterval(function () {
     window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
-  }, 8000);
+  }, 5000);
 
   send('ready', { url: location.href });
   scan();

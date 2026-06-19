@@ -29,6 +29,8 @@ final class AppController: NSObject, NSApplicationDelegate {
             self?.status = s
             self?.afterNavigation()
         }
+        // Queue running low → scroll the hidden timeline to load more.
+        store.onLow = { [weak self] in self?.harvester.requestMore() }
         harvester.start()
         rebuildMenu()
     }

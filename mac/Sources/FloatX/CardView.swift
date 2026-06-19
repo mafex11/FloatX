@@ -28,7 +28,6 @@ struct CardView: View {
             }
             hoverControls          // prev / pause / next on edge hover
             progressBar            // thin countdown bar pinned to the top
-            resizeGrip             // bottom-right drag-to-resize handle
         }
         .frame(minWidth: 280, minHeight: 220)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -73,7 +72,7 @@ struct CardView: View {
     @ViewBuilder
     private func mediaArea(_ post: Post) -> some View {
         if let video = post.media.first(where: { $0.type == .video }) {
-            VideoArea(post: post, posterURL: video.url)
+            VideoArea(post: post, posterURL: video.url, onEnded: { player.advance() })
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let media = post.media.first(where: { !$0.url.isEmpty }) {
             MediaView(media: media)
@@ -112,12 +111,14 @@ struct CardView: View {
                        value: post.engagement.replies, tint: .secondary, active: false) { openTweet(post) }
             // Repost → toggle in-place in the X session; state persists.
             ActionStat(symbol: "arrow.2.squarepath", filledSymbol: "arrow.2.squarepath",
-                       value: post.engagement.reposts, tint: .green, active: reposted.contains(post.id)) {
+                       value: adjusted(post.engagement.reposts, active: reposted.contains(post.id)),
+                       tint: .green, active: reposted.contains(post.id)) {
                 toggle(&reposted, post.id); onRepost(post.id)
             }
             // Like → toggle in-place in the X session; state persists.
             ActionStat(symbol: "heart", filledSymbol: "heart.fill",
-                       value: post.engagement.likes, tint: .pink, active: liked.contains(post.id)) {
+                       value: adjusted(post.engagement.likes, active: liked.contains(post.id)),
+                       tint: .pink, active: liked.contains(post.id)) {
                 toggle(&liked, post.id); onLike(post.id)
             }
             Spacer(minLength: 6)
@@ -129,6 +130,17 @@ struct CardView: View {
 
     private func toggle(_ set: inout Set<String>, _ id: String) {
         if set.contains(id) { set.remove(id) } else { set.insert(id) }
+    }
+
+    /// Optimistically show count +1 when the user has liked/reposted. Parses X's
+    /// abbreviated form ("1.2K", "3.4M"); only adjusts plain integers to avoid
+    /// faking precision on abbreviated values (those just keep their string).
+    private func adjusted(_ value: String, active: Bool) -> String {
+        guard active else { return value }
+        let v = value.trimmingCharacters(in: .whitespaces)
+        if v.isEmpty || v == "0" { return "1" }
+        if let n = Int(v) { return String(n + 1) }       // plain integer → +1
+        return v                                         // "1.2K" etc → leave as-is
     }
 
     // MARK: meta row — absolute date · views (X-style, under the content)
@@ -192,17 +204,6 @@ struct CardView: View {
         .padding(.top, 56)    // below header
     }
 
-    // MARK: resize grip — bottom-right corner
-    private var resizeGrip: some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                ResizeGrip()
-            }
-        }
-        .padding(4)
-    }
 
     private var waiting: some View {
         VStack(spacing: 6) {
@@ -246,39 +247,6 @@ private struct ActionStat: View {
         }
         .buttonStyle(.plain)
         .hoverHighlight()
-    }
-}
-
-/// Bottom-right drag handle that resizes the floating panel. Captures the
-/// window's size at drag start so translation maps to an absolute new size.
-private struct ResizeGrip: View {
-    @State private var startSize: NSSize?
-    var body: some View {
-        Image(systemName: "arrow.up.left.and.arrow.down.right")
-            .font(.system(size: 10, weight: .bold))
-            .foregroundStyle(.secondary.opacity(0.55))
-            .frame(width: 22, height: 22)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(coordinateSpace: .global)
-                    .onChanged { g in
-                        guard let win = panelWindow() else { return }
-                        if startSize == nil { startSize = win.frame.size }
-                        guard let s = startSize else { return }
-                        let newW = min(720, max(280, s.width + g.translation.width))
-                        let newH = min(900, max(220, s.height + g.translation.height))
-                        var f = win.frame
-                        // Anchor the top edge (AppKit origin is bottom-left).
-                        f.origin.y += (f.size.height - newH)
-                        f.size = NSSize(width: newW, height: newH)
-                        win.setFrame(f, display: true)
-                    }
-                    .onEnded { _ in startSize = nil }
-            )
-            .help("Drag to resize")
-    }
-    private func panelWindow() -> NSWindow? {
-        NSApp.windows.first(where: { $0 is GlassPanel })
     }
 }
 
@@ -346,9 +314,10 @@ private struct Avatar: View {
 private struct VideoArea: View {
     let post: Post
     let posterURL: String
+    var onEnded: () -> Void = {}
 
     var body: some View {
-        VideoView(tweetID: post.id)
+        VideoView(tweetID: post.id, onEnded: onEnded)
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .id(post.id) // fresh web view per post
     }

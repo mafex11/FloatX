@@ -14,6 +14,11 @@ final class PostStore: ObservableObject {
     private var cursor = -1
 
     private let historyMax = 50
+    private let lowWater = 5
+
+    /// Called when the upcoming queue is running low, so the app can ask the
+    /// hidden timeline to scroll and load more.
+    var onLow: (() -> Void)?
 
     var canAdvance: Bool { cursor + 1 < posts.count }
     var canBack: Bool { cursor > 0 }
@@ -45,6 +50,9 @@ final class PostStore: ObservableObject {
 
     @discardableResult
     func advance() -> Bool {
+        // Even if we can't advance yet, a low queue should trigger a refill so
+        // the next click works — and proactively while there's still runway.
+        defer { if queueCount <= lowWater { onLow?() } }
         guard cursor + 1 < posts.count else { return false }
         cursor += 1
         trimHistory()

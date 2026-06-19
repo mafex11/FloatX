@@ -47,3 +47,7 @@ echo "→ zipping"
 ditto -c -k --keepParent "$APP" FloatX.zip
 echo "→ done: $(pwd)/FloatX.zip ($(du -h FloatX.zip | cut -f1))"
 echo "  sha256: $(shasum -a 256 FloatX.zip | cut -d' ' -f1)"
+
+# Remove the staged .app so it can't be mistaken for a second install / launched
+# from the source tree. The shipped artifact is FloatX.zip (→ /Applications via brew).
+rm -rf "$APP"
