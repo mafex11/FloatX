@@ -143,7 +143,7 @@ controls = f'''<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http
   <text x="1184" y="448" text-anchor="end" font-family="system-ui,sans-serif" font-size="25" font-weight="500" fill="#8b98a5">set the speed — seconds to an hour.</text>
   <g transform="translate(150,240)" filter="url(#shadow)">
     <g clip-path="url(#cardclip)">
-      {card("rare.jpg","rare_jpg","19h","",0.4,media=MEDIA)}
+      {card("Mafex","devmafex","19h","",0.4,media=MEDIA)}
       <rect x="0" y="160" width="360" height="160" fill="url(#ctrlgrad)"/>
       {cbtn(120,prev_p)}{cbtn(180,pause_p)}{cbtn(240,next_p)}
     </g>
@@ -167,8 +167,16 @@ POPW=300
 def popup():
     p=[f'<rect width="{POPW}" height="372" rx="20" fill="#0a0d12"/>',
        f'<rect width="{POPW}" height="372" rx="20" fill="url(#popglow)"/>']
-    # header
-    p.append('<g transform="translate(20,24)"><path transform="scale(0.8)" fill="#1d9bf0" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></g>')
+    # header — mini FloatX logo (floating post card + avatar dot + accent bar)
+    p.append('<g transform="translate(20,21)">'
+             '<g transform="rotate(-7 9 9)">'
+             '<rect x="0" y="2" width="20" height="15" rx="4" fill="#eef4f9"/>'
+             '<circle cx="5.5" cy="7.5" r="2.2" fill="#1d9bf0"/>'
+             '<rect x="9.5" y="5.5" width="8" height="1.6" rx="0.8" fill="#9fb2c4"/>'
+             '<rect x="9.5" y="9" width="5.5" height="1.6" rx="0.8" fill="#c4d2de"/>'
+             '</g>'
+             '<rect x="3" y="20" width="14" height="2" rx="1" fill="#1d9bf0"/>'
+             '</g>')
     p.append('<text x="46" y="38" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#f2f4f7">FloatX</text>')
     p.append(f'<rect x="{POPW-66}" y="22" width="46" height="24" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.10)"/><text x="{POPW-43}" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="500" fill="#cdd6df">open</text>')
     # interval card

@@ -1,33 +1,48 @@
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Glass tile gradient: deep dark with a subtle blue lift -->
+    <!-- glass app tile -->
     <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#1b2027"/>
-      <stop offset="1" stop-color="#0a0c10"/>
+      <stop offset="1" stop-color="#080a0e"/>
     </linearGradient>
-    <!-- Blue accent glow, top-left -->
-    <radialGradient id="glow" cx="0.25" cy="0.1" r="0.9">
-      <stop offset="0" stop-color="#1d9bf0" stop-opacity="0.45"/>
+    <radialGradient id="glow" cx="0.3" cy="0.12" r="0.9">
+      <stop offset="0" stop-color="#1d9bf0" stop-opacity="0.5"/>
       <stop offset="0.6" stop-color="#1d9bf0" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="hairline" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
       <stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
+    <!-- the floating post card -->
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d8e6f2"/>
+    </linearGradient>
+    <filter id="cardshadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
   </defs>
 
-  <!-- Floating glass tile (the PiP window) -->
+  <!-- app tile -->
   <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#tile)"/>
   <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#glow)"/>
-  <!-- hairline top highlight + border -->
-  <rect x="10.5" y="10.5" width="107" height="107" rx="27.5" fill="none" stroke="url(#hairline)" stroke-width="1.5"/>
-  <rect x="11" y="11" width="106" height="106" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+  <rect x="10.5" y="10.5" width="107" height="107" rx="27.5" fill="none" stroke="url(#hair)" stroke-width="1.5"/>
 
-  <!-- X glyph, centered -->
-  <g transform="translate(64,62)" fill="#f2f4f7">
-    <path d="M -22 -22 L -9 -22 L 6 -1.5 L 21 -22 L 30 -22 L 11 3.5 L 31 30 L 18 30 L 1.5 8 L -16 30 L -25 30 L -4.5 3 Z"/>
+  <!-- a back card, faded, to imply a stack/timeline -->
+  <rect x="34" y="44" width="60" height="44" rx="11" fill="#ffffff" opacity="0.10"/>
+
+  <!-- the floating post card, lifted + tilted -->
+  <g transform="rotate(-7 64 60)" filter="url(#cardshadow)">
+    <rect x="30" y="36" width="68" height="50" rx="12" fill="url(#card)"/>
+    <!-- avatar dot -->
+    <circle cx="44" cy="50" r="6" fill="#1d9bf0"/>
+    <!-- two text lines -->
+    <rect x="55" y="46" width="32" height="4.5" rx="2.25" fill="#9fb2c4"/>
+    <rect x="55" y="55" width="22" height="4.5" rx="2.25" fill="#c4d2de"/>
+    <!-- a content line -->
+    <rect x="38" y="68" width="52" height="4.5" rx="2.25" fill="#c9d6e2"/>
   </g>
 
-  <!-- bottom accent bar (the progress/drip cue) -->
-  <rect x="34" y="98" width="60" height="4" rx="2" fill="#1d9bf0" opacity="0.9"/>
+  <!-- blue progress accent at the base (the drip/advance cue) -->
+  <rect x="40" y="100" width="48" height="5" rx="2.5" fill="#1d9bf0"/>
 </svg>
