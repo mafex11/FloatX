@@ -5,6 +5,10 @@ const brew = 'brew install mafex11/tap/floatx';
 const year = 2026;
 const xglyph =
   "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z";
+
+// Social-card image needs an absolute URL; derive it from the deployed `site`.
+const ogImage = new URL('/assets/hero.png', Astro.site).href;
+const canonical = Astro.site?.href;
 ---
 
 <!doctype html>
@@ -14,10 +18,13 @@ const xglyph =
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FloatX — your X timeline, floating on screen</title>
     <meta name="description" content="FloatX floats your X timeline one post at a time in a glass always-on-top widget. A native Mac app and a browser extension. No API, no cost." />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
     <meta property="og:title" content="FloatX — your X timeline, floating on screen" />
     <meta property="og:description" content="An ambient glass widget that drips your X feed one post at a time. No API, no cost." />
-    <meta property="og:image" content="/assets/hero.png" />
+    <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="icon" href={`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path transform='translate(2.4,0) scale(0.8)' fill='%23f5f5f7' d='${xglyph}'/><rect x='5' y='21.2' width='14' height='2' rx='1' fill='%232997ff'/></svg>`} />
     <meta name="color-scheme" content="dark" />
   </head>
