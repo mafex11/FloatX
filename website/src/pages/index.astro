@@ -5,6 +5,14 @@ const brew = 'brew install mafex11/tap/floatx';
 const year = 2026;
 const xglyph =
   "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z";
+
+// Floating mini-posts that drift in the hero background.
+const drifters = [
+  { n: "Mafex", h: "devmafex", t: "building floatX in public ", x: "6%", y: "18%", d: "0s", dur: "22s" },
+  { n: "neural nets", h: "cneuralnetwork", t: "what single event made you?", x: "78%", y: "12%", d: "3s", dur: "26s" },
+  { n: "garçon", h: "boymolish", t: "are you recording? no…", x: "84%", y: "62%", d: "6s", dur: "24s" },
+  { n: "dasha", h: "0xdasha", t: "a genuinely cool tech niche?", x: "3%", y: "66%", d: "1.5s", dur: "28s" },
+];
 ---
 
 <!doctype html>
@@ -13,23 +21,25 @@ const xglyph =
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FloatX — your X timeline, floating on screen</title>
-    <meta
-      name="description"
-      content="FloatX floats your X timeline one post at a time in a glass always-on-top widget. Mac app + browser extension. No API, no cost."
-    />
+    <meta name="description" content="FloatX floats your X timeline one post at a time in a glass always-on-top widget. Mac app + browser extension. No API, no cost." />
     <meta property="og:title" content="FloatX — your X timeline, floating on screen" />
     <meta property="og:description" content="An ambient glass widget that drips your X feed one post at a time. No API, no cost." />
     <meta property="og:image" content="/assets/hero.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link
-      rel="icon"
-      href={`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path transform='translate(2.4,0) scale(0.8)' fill='%23f2f4f7' d='${xglyph}'/><rect x='5' y='21.2' width='14' height='2' rx='1' fill='%231d9bf0'/></svg>`}
-    />
+    <link rel="icon" href={`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path transform='translate(2.4,0) scale(0.8)' fill='%23f2f4f7' d='${xglyph}'/><rect x='5' y='21.2' width='14' height='2' rx='1' fill='%231d9bf0'/></svg>`} />
   </head>
   <body>
-    <div class="bg-glow" aria-hidden></div>
+    <!-- animated background layers -->
+    <div class="mesh" aria-hidden>
+      <span class="blob b1"></span>
+      <span class="blob b2"></span>
+      <span class="blob b3"></span>
+      <div class="grid-lines"></div>
+      <div class="noise"></div>
+    </div>
+    <div class="cursor-glow" aria-hidden></div>
 
-    <nav>
+    <nav class="reveal">
       <a class="brand" href="/">
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
           <path transform="translate(2.4,0) scale(0.8)" fill="#f2f4f7" d={xglyph} />
@@ -39,91 +49,130 @@ const xglyph =
       </a>
       <div class="nav-links">
         <a href="#features">Features</a>
+        <a href="#showcase">Showcase</a>
         <a href="#install">Install</a>
-        <a href={repo} class="ghost-pill">GitHub</a>
+        <a href={repo} class="ghost-pill">GitHub ↗</a>
       </div>
     </nav>
 
     <main>
       <!-- HERO -->
       <header class="hero">
-        <div class="pill-tag">macOS app · browser extension</div>
-        <h1>your X timeline,<br /><span class="grad">floating on screen.</span></h1>
-        <p class="sub">
-          FloatX drips your feed one post at a time into a small glass window —
-          auto-advancing, with hover controls, inline video, and translation.
-          <strong>No API. No cost.</strong> It reads your own logged-in session,
-          entirely on your machine.
-        </p>
-        <div class="cta">
-          <a class="btn primary" href="#install">Get FloatX</a>
-          <a class="btn ghost" href={repo}>View source</a>
+        <!-- drifting background posts -->
+        <div class="drifters" aria-hidden>
+          {drifters.map((p) => (
+            <div class="drift" style={`left:${p.x};top:${p.y};animation-delay:${p.d};animation-duration:${p.dur}`}>
+              <div class="drift-dot"></div>
+              <div class="drift-body">
+                <strong>{p.n}</strong> <span>@{p.h}</span>
+                <p>{p.t}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        <div class="demo">
+        <div class="hero-inner">
+          <div class="pill-tag reveal">
+            <span class="dot"></span> macOS app · browser extension
+          </div>
+          <h1 class="reveal" style="--d:.05s">
+            your X timeline,<br /><span class="grad">floating on screen.</span>
+          </h1>
+          <p class="sub reveal" style="--d:.12s">
+            FloatX drips your feed one post at a time into a small glass window —
+            auto-advancing, with hover controls, inline video, and translation.
+            <strong>No API. No cost.</strong>
+          </p>
+          <div class="cta reveal" style="--d:.18s">
+            <a class="btn primary" href="#install"><span>Get FloatX</span></a>
+            <a class="btn ghost" href={repo}>View source</a>
+          </div>
+          <div class="stat-row reveal" style="--d:.24s">
+            <div><b data-count="1">0</b><i>post at a time</i></div>
+            <div><b data-count="0">0</b><i>$ / month</i></div>
+            <div><b>∞</b><i>doomscroll</i></div>
+          </div>
+        </div>
+
+        <div class="demo reveal" style="--d:.3s">
+          <div class="demo-bar"><i></i><i></i><i></i></div>
           <img src="/assets/demo.gif" alt="FloatX in action" loading="eager" />
+          <div class="demo-shine"></div>
         </div>
       </header>
 
-      <!-- FEATURES -->
+      <!-- MARQUEE -->
+      <section class="marquee-wrap reveal">
+        <div class="marquee">
+          {Array(2).fill(0).map(() => (
+            <div class="marquee-track">
+              {["no API","no cost","inline video","liquid glass","auto-advance","translate","desktop widget","menu-bar","hover controls","resizable","your own session","↗ open in X"].map((w) => (
+                <span>{w}<i>·</i></span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- FEATURES (bento) -->
       <section id="features" class="features">
-        <h2 class="section-title">Built to live on your screen</h2>
-        <div class="grid">
-          <div class="card">
+        <h2 class="section-title reveal">Built to live on your screen</h2>
+        <p class="section-sub reveal">Everything an ambient feed should be — and nothing it shouldn't.</p>
+
+        <div class="bento">
+          <div class="tile big reveal tilt">
             <div class="ic">∞</div>
-            <h3>No API, no cost</h3>
-            <p>Reads your already-logged-in X session. Nothing to pay for, nothing to authorize, nothing leaves your machine.</p>
+            <h3>No API. No cost.</h3>
+            <p>FloatX reads your already-logged-in X session — nothing to pay for, nothing to authorize, nothing leaves your machine. Ever.</p>
+            <div class="tile-glow"></div>
           </div>
-          <div class="card">
+          <div class="tile reveal tilt" style="--d:.06s">
             <div class="ic">◷</div>
-            <h3>Ambient by design</h3>
-            <p>Auto-advances one post at a time on an interval you set — seconds to hours. Set it and let it drip while you work.</p>
+            <h3>Ambient</h3>
+            <p>Auto-advances on your interval — seconds to hours.</p>
+            <div class="tile-glow"></div>
           </div>
-          <div class="card">
+          <div class="tile reveal tilt" style="--d:.12s">
             <div class="ic">▶</div>
             <h3>Inline video</h3>
-            <p>X videos autoplay right in the widget, and the shower waits for them to finish before moving on.</p>
+            <p>X videos play right in the widget, then move on when done.</p>
+            <div class="tile-glow"></div>
           </div>
-          <div class="card">
+          <div class="tile wide reveal tilt" style="--d:.06s">
+            <div class="ic">◳</div>
+            <h3>Liquid Glass, native</h3>
+            <p>A real macOS glass widget — resizable S/M/L/XL, adjustable transparency, and a desktop mode that pins it to your wallpaper.</p>
+            <div class="tile-glow"></div>
+          </div>
+          <div class="tile reveal tilt" style="--d:.12s">
             <div class="ic">↔</div>
             <h3>Your controls</h3>
-            <p>Hover for prev · pause · next. Like and repost in place; reply opens the tweet. Translate non-English posts in a tap.</p>
-          </div>
-          <div class="card">
-            <div class="ic">◳</div>
-            <h3>Liquid Glass</h3>
-            <p>A native macOS glass widget — resizable (S/M/L/XL), adjustable transparency, and a desktop mode that pins it to your wallpaper.</p>
-          </div>
-          <div class="card">
-            <div class="ic">⌥</div>
-            <h3>Always one tap away</h3>
-            <p>Lives in the menu bar. Click to float, right-click for settings, or summon it anywhere with a keyboard shortcut.</p>
+            <p>Prev · pause · next on hover. Like, repost, translate in a tap.</p>
+            <div class="tile-glow"></div>
           </div>
         </div>
+      </section>
 
+      <!-- SHOWCASE -->
+      <section id="showcase" class="showcase">
+        <h2 class="section-title reveal">See it move</h2>
         <div class="shots">
-          <img src="/assets/hero.png" alt="The glass card" />
-          <img src="/assets/controls.png" alt="Hover controls" />
-          <img src="/assets/settings.png" alt="Settings" />
-          <img src="/assets/feed.png" alt="Feed aware" />
+          <figure class="reveal"><img src="/assets/hero.png" alt="The glass card" /><figcaption>The glass card</figcaption></figure>
+          <figure class="reveal" style="--d:.08s"><img src="/assets/controls.png" alt="Hover controls" /><figcaption>Hover controls</figcaption></figure>
+          <figure class="reveal" style="--d:.16s"><img src="/assets/settings.png" alt="Settings" /><figcaption>Make it yours</figcaption></figure>
+          <figure class="reveal" style="--d:.24s"><img src="/assets/feed.png" alt="Feed aware" /><figcaption>Always your feed</figcaption></figure>
         </div>
       </section>
 
       <!-- INSTALL -->
       <section id="install" class="install">
-        <h2 class="section-title">Install</h2>
+        <h2 class="section-title reveal">Get it in a minute</h2>
         <div class="install-grid">
-          <!-- Mac app -->
-          <div class="install-card featured">
-            <div class="badge-row">
-              <h3>Mac app</h3>
-              <span class="rec">recommended</span>
-            </div>
-            <p class="install-desc">
-              Native menu-bar app. Fully standalone — no browser needed. Inline
-              video, glass UI, resizable. macOS 26+.
-            </p>
+          <div class="install-card featured reveal tilt">
+            <div class="badge-row"><h3>Mac app</h3><span class="rec">recommended</span></div>
+            <p class="install-desc">Native menu-bar app. Fully standalone — no browser needed. Inline video, glass UI, resizable. macOS 26+.</p>
             <div class="codeblock">
+              <span class="prompt">$</span>
               <code id="brew">{brew}</code>
               <button class="copy" data-copy={brew} aria-label="Copy">Copy</button>
             </div>
@@ -133,19 +182,13 @@ const xglyph =
               <li>Sign in to X once — the window closes itself.</li>
               <li>Click the icon to float your timeline.</li>
             </ol>
-            <p class="fineprint">Ad-hoc signed. If Gatekeeper blocks it, right-click the app → Open.</p>
+            <p class="fineprint">Ad-hoc signed. If Gatekeeper blocks it, right-click → Open.</p>
+            <div class="tile-glow"></div>
           </div>
 
-          <!-- Extension -->
-          <div class="install-card">
-            <div class="badge-row">
-              <h3>Browser extension</h3>
-              <span class="plat">Chrome · Edge</span>
-            </div>
-            <p class="install-desc">
-              Floats your feed in a Picture-in-Picture window. Lighter, but needs
-              the browser open (video shows as poster only).
-            </p>
+          <div class="install-card reveal tilt" style="--d:.1s">
+            <div class="badge-row"><h3>Browser extension</h3><span class="plat">Chrome · Edge</span></div>
+            <p class="install-desc">Floats your feed in a Picture-in-Picture window. Lighter, but needs the browser open (video shows as poster).</p>
             <ol class="steps">
               <li>Download the <a href={releases}>latest zip</a> and unzip it.</li>
               <li>Open <code>chrome://extensions</code>.</li>
@@ -153,7 +196,16 @@ const xglyph =
               <li>Click <strong>Load unpacked</strong>, pick the folder.</li>
               <li>Open <code>x.com</code> → click the pill (or <kbd>⌥⇧X</kbd>).</li>
             </ol>
+            <div class="tile-glow"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- FINAL CTA -->
+      <section class="final reveal">
+        <div class="final-card">
+          <h2>Stop opening the tab.<br /><span class="grad">Let it float.</span></h2>
+          <a class="btn primary big" href="#install"><span>Get FloatX</span></a>
         </div>
       </section>
     </main>
@@ -167,201 +219,239 @@ const xglyph =
           </svg>
           <span>FloatX</span>
         </div>
-        <div class="foot-links">
-          <a href={repo}>GitHub</a>
-          <a href={releases}>Releases</a>
-        </div>
+        <div class="foot-links"><a href={repo}>GitHub</a><a href={releases}>Releases</a></div>
       </div>
       <p class="fine">© {year} · Not affiliated with X Corp. Reads only your own logged-in session.</p>
     </footer>
 
     <script>
+      // 1) Scroll reveals
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+      // 2) Count-up stats
+      const counted = new WeakSet<Element>();
+      const cio = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting || counted.has(e.target)) return;
+          counted.add(e.target);
+          const el = e.target as HTMLElement;
+          const target = Number(el.dataset.count || '0');
+          let cur = 0; const step = Math.max(1, Math.ceil(target / 20));
+          const tick = () => { cur = Math.min(target, cur + step); el.textContent = String(cur); if (cur < target) requestAnimationFrame(tick); };
+          tick();
+        });
+      }, { threshold: 1 });
+      document.querySelectorAll('[data-count]').forEach((el) => cio.observe(el));
+
+      // 3) Cursor glow follows pointer
+      const glow = document.querySelector<HTMLElement>('.cursor-glow');
+      if (glow && window.matchMedia('(pointer:fine)').matches) {
+        window.addEventListener('pointermove', (e) => {
+          glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+        });
+      }
+
+      // 4) 3D tilt on hover
+      document.querySelectorAll<HTMLElement>('.tilt').forEach((card) => {
+        card.addEventListener('pointermove', (e) => {
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform = `perspective(800px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) translateY(-2px)`;
+          card.style.setProperty('--mx', `${(px + 0.5) * 100}%`);
+          card.style.setProperty('--my', `${(py + 0.5) * 100}%`);
+        });
+        card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+      });
+
+      // 5) Copy button
       document.querySelectorAll<HTMLButtonElement>('.copy').forEach((b) => {
         b.addEventListener('click', async () => {
           await navigator.clipboard.writeText(b.dataset.copy || '');
-          const t = b.textContent;
-          b.textContent = 'Copied';
-          b.classList.add('done');
+          const t = b.textContent; b.textContent = 'Copied ✓'; b.classList.add('done');
           setTimeout(() => { b.textContent = t; b.classList.remove('done'); }, 1400);
         });
       });
+
+      // 6) Parallax on the demo + drifters
+      window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        document.querySelector<HTMLElement>('.demo')?.style.setProperty('--py', `${y * -0.04}px`);
+      }, { passive: true });
     </script>
 
     <style is:global>
       :root {
-        --bg: #07090d;
-        --fg: #e9edf2;
-        --muted: #8b98a5;
-        --dim: #5b6570;
-        --line: rgba(255, 255, 255, 0.08);
-        --blue: #1d9bf0;
-        --blue2: #4cb8ff;
-        --glass: rgba(255, 255, 255, 0.045);
+        --bg: #06080c; --fg: #eef2f6; --muted: #93a0ad; --dim: #5b6570;
+        --line: rgba(255,255,255,0.08); --blue: #1d9bf0; --blue2: #6cc5ff; --glass: rgba(255,255,255,0.04);
       }
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation: none !important; transition: none !important; } }
       body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--fg);
+        margin: 0; background: var(--bg); color: var(--fg); overflow-x: hidden;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        line-height: 1.55;
-        -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
+        line-height: 1.55; -webkit-font-smoothing: antialiased;
       }
       a { color: inherit; text-decoration: none; }
 
-      /* ambient background glow */
-      .bg-glow {
-        position: fixed; inset: 0; z-index: -1; pointer-events: none;
-        background:
-          radial-gradient(60% 50% at 50% -5%, rgba(29,155,240,0.22), transparent 60%),
-          radial-gradient(40% 40% at 85% 15%, rgba(76,184,255,0.10), transparent 60%),
-          linear-gradient(180deg, #0a0e14, #07090d 40%);
+      /* ===== animated background ===== */
+      .mesh { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: radial-gradient(140% 100% at 50% -20%, #0c1320, #06080c 55%); }
+      .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; mix-blend-mode: screen; }
+      .b1 { width: 50vw; height: 50vw; left: -10vw; top: -10vw; background: #1d9bf0; animation: drift1 24s ease-in-out infinite; }
+      .b2 { width: 42vw; height: 42vw; right: -8vw; top: 8vh; background: #0a66c2; animation: drift2 30s ease-in-out infinite; }
+      .b3 { width: 36vw; height: 36vw; left: 30vw; top: 60vh; background: #14e1ff; opacity: 0.28; animation: drift3 36s ease-in-out infinite; }
+      @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(12vw,8vh) scale(1.15)} }
+      @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-10vw,12vh) scale(1.1)} }
+      @keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-14vw,-10vh) scale(1.2)} }
+      .grid-lines {
+        position: absolute; inset: 0; opacity: 0.4;
+        background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 56px 56px; mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 75%);
       }
+      .noise { position: absolute; inset: 0; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+      .cursor-glow { position: fixed; top: 0; left: 0; width: 460px; height: 460px; margin: -230px 0 0 -230px; z-index: -1; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, rgba(29,155,240,0.12), transparent 65%); transition: transform .12s ease-out; }
 
-      /* nav */
-      nav {
-        position: sticky; top: 0; z-index: 50;
-        display: flex; align-items: center; justify-content: space-between;
-        max-width: 1080px; margin: 0 auto; padding: 16px 24px;
-        backdrop-filter: blur(12px);
-      }
+      /* ===== reveal ===== */
+      .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.2,.7,.2,1) var(--d,0s), transform .7s cubic-bezier(.2,.7,.2,1) var(--d,0s); }
+      .reveal.in { opacity: 1; transform: none; }
+
+      /* ===== nav ===== */
+      nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto; padding: 18px 24px; backdrop-filter: blur(14px); }
       .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; }
-      .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--muted); }
+      .nav-links { display: flex; align-items: center; gap: 24px; font-size: 14px; color: var(--muted); }
       .nav-links a:hover { color: var(--fg); }
-      .ghost-pill {
-        border: 1px solid var(--line); padding: 7px 14px; border-radius: 9999px;
-        background: var(--glass); color: var(--fg) !important;
-      }
+      .ghost-pill { border: 1px solid var(--line); padding: 7px 15px; border-radius: 9999px; background: var(--glass); color: var(--fg) !important; }
       .ghost-pill:hover { background: rgba(255,255,255,0.09); }
 
-      main { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+      main { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-      /* hero */
-      .hero { text-align: center; padding: 64px 0 40px; }
-      .pill-tag {
-        display: inline-block; font-size: 13px; color: var(--blue2);
-        border: 1px solid rgba(29,155,240,0.3); background: rgba(29,155,240,0.08);
-        padding: 6px 14px; border-radius: 9999px; margin-bottom: 26px;
+      /* ===== hero ===== */
+      .hero { position: relative; padding: 70px 0 36px; }
+      .hero-inner { position: relative; z-index: 2; text-align: center; }
+      .drifters { position: absolute; inset: -40px 0 0 0; z-index: 1; pointer-events: none; }
+      .drift {
+        position: absolute; display: flex; gap: 8px; width: 210px; padding: 11px 13px;
+        background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 14px;
+        backdrop-filter: blur(8px); box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        animation: float-card ease-in-out infinite; opacity: 0.55;
       }
-      h1 {
-        font-size: clamp(40px, 7vw, 76px); line-height: 1.02; margin: 0 0 22px;
-        letter-spacing: -0.03em; font-weight: 800;
-      }
-      .grad {
-        background: linear-gradient(100deg, var(--blue2), var(--blue));
-        -webkit-background-clip: text; background-clip: text; color: transparent;
-      }
-      .sub { font-size: 19px; color: var(--muted); max-width: 60ch; margin: 0 auto 32px; }
+      @media (max-width: 900px) { .drift { display: none; } }
+      .drift-dot { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(140deg,#4cb8ff,#1d9bf0); }
+      .drift-body { font-size: 11px; line-height: 1.35; text-align: left; }
+      .drift-body strong { font-size: 12px; } .drift-body span { color: var(--dim); }
+      .drift-body p { margin: 2px 0 0; color: var(--muted); }
+      @keyframes float-card { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-18px) rotate(1.5deg)} }
+
+      .pill-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--blue2); border: 1px solid rgba(29,155,240,0.3); background: rgba(29,155,240,0.08); padding: 7px 15px; border-radius: 9999px; margin-bottom: 28px; }
+      .pill-tag .dot { width: 7px; height: 7px; border-radius: 50%; background: #2fd07a; box-shadow: 0 0 0 0 rgba(47,208,122,0.6); animation: pulse 2s infinite; }
+      @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(47,208,122,0.5)} 70%{box-shadow:0 0 0 8px rgba(47,208,122,0)} 100%{box-shadow:0 0 0 0 rgba(47,208,122,0)} }
+      h1 { font-size: clamp(42px, 7.5vw, 84px); line-height: 1.0; margin: 0 0 22px; letter-spacing: -0.035em; font-weight: 850; }
+      .grad { background: linear-gradient(100deg, var(--blue2), var(--blue) 60%, #a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; background-size: 200% auto; animation: shimmer 6s linear infinite; }
+      @keyframes shimmer { to { background-position: 200% center; } }
+      .sub { font-size: 19px; color: var(--muted); max-width: 58ch; margin: 0 auto 34px; }
       .sub strong { color: var(--fg); font-weight: 600; }
-      .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px; }
-      .btn {
-        display: inline-block; padding: 13px 30px; border-radius: 9999px;
-        font-weight: 700; font-size: 15px; transition: transform .15s, background .2s, box-shadow .2s;
-      }
-      .btn:hover { transform: translateY(-1px); }
-      .btn.primary { background: var(--blue); color: #fff; box-shadow: 0 8px 28px rgba(29,155,240,0.35); }
-      .btn.primary:hover { background: var(--blue2); }
+      .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+      .btn { position: relative; display: inline-block; padding: 14px 32px; border-radius: 9999px; font-weight: 700; font-size: 15px; transition: transform .15s, background .2s, box-shadow .25s; overflow: hidden; }
+      .btn:hover { transform: translateY(-2px); }
+      .btn.primary { background: var(--blue); color: #fff; box-shadow: 0 10px 34px rgba(29,155,240,0.4); }
+      .btn.primary:hover { box-shadow: 0 14px 44px rgba(29,155,240,0.55); }
+      .btn.primary span { position: relative; z-index: 1; }
+      .btn.primary::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35), transparent 70%); transform: translateX(-120%); }
+      .btn.primary:hover::after { animation: sheen .8s; }
+      @keyframes sheen { to { transform: translateX(120%); } }
       .btn.ghost { border: 1px solid var(--line); background: var(--glass); }
       .btn.ghost:hover { background: rgba(255,255,255,0.09); }
+      .btn.big { padding: 17px 44px; font-size: 17px; }
 
-      .demo {
-        border-radius: 20px; overflow: hidden;
-        border: 1px solid var(--line);
-        box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
-        background: #0a0d12;
-      }
+      .stat-row { display: flex; gap: 40px; justify-content: center; margin-bottom: 56px; }
+      .stat-row div { display: flex; flex-direction: column; }
+      .stat-row b { font-size: 30px; font-weight: 800; color: var(--blue2); }
+      .stat-row i { font-style: normal; font-size: 13px; color: var(--dim); }
+
+      .demo { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 50px 130px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05); background: #0a0d12; transform: translateY(var(--py,0)); }
+      .demo-bar { display: flex; gap: 7px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--line); }
+      .demo-bar i { width: 11px; height: 11px; border-radius: 50%; background: #2a2f37; }
+      .demo-bar i:nth-child(1){ background:#ff5f57 } .demo-bar i:nth-child(2){ background:#febc2e } .demo-bar i:nth-child(3){ background:#28c840 }
       .demo img { display: block; width: 100%; height: auto; }
+      .demo-shine { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 40% at 50% 0%, rgba(255,255,255,0.07), transparent 70%); }
 
-      /* sections */
-      .section-title {
-        font-size: clamp(26px, 4vw, 36px); text-align: center; font-weight: 800;
-        letter-spacing: -0.02em; margin: 0 0 40px;
-      }
-      .features { padding: 96px 0 40px; }
+      /* ===== marquee ===== */
+      .marquee-wrap { margin: 56px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 18px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+      .marquee { display: flex; width: max-content; animation: scroll-x 32s linear infinite; }
+      .marquee-track { display: flex; }
+      .marquee span { display: inline-flex; align-items: center; gap: 18px; padding: 0 18px; font-size: 18px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+      .marquee span i { color: var(--blue); font-style: normal; }
+      @keyframes scroll-x { to { transform: translateX(-50%); } }
 
-      .grid {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 56px;
-      }
-      .card {
-        background: var(--glass); border: 1px solid var(--line);
-        border-radius: 18px; padding: 26px;
-        transition: border-color .2s, background .2s, transform .15s;
-      }
-      .card:hover { border-color: rgba(29,155,240,0.4); background: rgba(255,255,255,0.06); transform: translateY(-2px); }
-      .ic {
-        width: 40px; height: 40px; border-radius: 11px; margin-bottom: 14px;
-        display: flex; align-items: center; justify-content: center;
-        background: linear-gradient(140deg, rgba(76,184,255,0.25), rgba(29,155,240,0.12));
-        border: 1px solid rgba(29,155,240,0.25); font-size: 18px; color: var(--blue2);
-      }
-      .card h3 { margin: 0 0 7px; font-size: 17px; }
-      .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+      /* ===== sections ===== */
+      .section-title { font-size: clamp(28px, 4.5vw, 42px); text-align: center; font-weight: 850; letter-spacing: -0.025em; margin: 0 0 10px; }
+      .section-sub { text-align: center; color: var(--muted); margin: 0 0 44px; font-size: 17px; }
+      .features { padding: 90px 0 30px; }
 
-      .shots {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
-      }
-      .shots img {
-        width: 100%; border-radius: 16px; border: 1px solid var(--line);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-      }
+      /* bento */
+      .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .tile { position: relative; background: var(--glass); border: 1px solid var(--line); border-radius: 20px; padding: 28px; overflow: hidden; transition: transform .2s cubic-bezier(.2,.7,.2,1), border-color .2s; transform-style: preserve-3d; }
+      .tile:hover { border-color: rgba(29,155,240,0.45); }
+      .tile.big { grid-row: span 2; }
+      .tile.wide { grid-column: span 2; }
+      .tile-glow { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s; background: radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(29,155,240,0.16), transparent 60%); }
+      .tile:hover .tile-glow { opacity: 1; }
+      .ic { width: 44px; height: 44px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; background: linear-gradient(140deg, rgba(108,197,255,0.28), rgba(29,155,240,0.12)); border: 1px solid rgba(29,155,240,0.25); font-size: 20px; color: var(--blue2); }
+      .tile h3 { margin: 0 0 8px; font-size: 18px; }
+      .tile.big h3 { font-size: 24px; }
+      .tile p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+      /* showcase */
+      .showcase { padding: 90px 0 30px; }
+      .shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+      .shots figure { margin: 0; }
+      .shots img { width: 100%; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 26px 70px rgba(0,0,0,0.5); transition: transform .3s, box-shadow .3s; }
+      .shots figure:hover img { transform: translateY(-4px) scale(1.01); box-shadow: 0 40px 90px rgba(0,0,0,0.6); }
+      .shots figcaption { color: var(--dim); font-size: 13px; margin-top: 10px; text-align: center; }
 
       /* install */
-      .install { padding: 96px 0 40px; }
+      .install { padding: 90px 0 30px; }
       .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-      .install-card {
-        background: var(--glass); border: 1px solid var(--line);
-        border-radius: 20px; padding: 30px;
-      }
+      .install-card { position: relative; background: var(--glass); border: 1px solid var(--line); border-radius: 22px; padding: 32px; overflow: hidden; transition: transform .2s, border-color .2s; transform-style: preserve-3d; }
       .install-card.featured { border-color: rgba(29,155,240,0.4); background: rgba(29,155,240,0.05); }
-      .badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-      .badge-row h3 { margin: 0; font-size: 22px; }
-      .rec { font-size: 12px; color: var(--blue2); border: 1px solid rgba(29,155,240,0.35);
-             padding: 3px 9px; border-radius: 9999px; background: rgba(29,155,240,0.1); }
-      .plat { font-size: 12px; color: var(--dim); border: 1px solid var(--line);
-              padding: 3px 9px; border-radius: 9999px; }
+      .badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+      .badge-row h3 { margin: 0; font-size: 23px; }
+      .rec { font-size: 12px; color: var(--blue2); border: 1px solid rgba(29,155,240,0.35); padding: 3px 10px; border-radius: 9999px; background: rgba(29,155,240,0.1); }
+      .plat { font-size: 12px; color: var(--dim); border: 1px solid var(--line); padding: 3px 10px; border-radius: 9999px; }
       .install-desc { color: var(--muted); font-size: 15px; margin: 0 0 18px; }
-
-      .codeblock {
-        display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        background: #05070a; border: 1px solid var(--line); border-radius: 12px;
-        padding: 13px 14px; margin-bottom: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      }
-      .codeblock code { font-size: 13.5px; color: var(--blue2); overflow-x: auto; }
-      .copy {
-        flex-shrink: 0; border: 1px solid var(--line); background: var(--glass); color: var(--fg);
-        font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: background .2s;
-        font-family: inherit;
-      }
+      .codeblock { display: flex; align-items: center; gap: 10px; background: #04060a; border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; margin-bottom: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .codeblock .prompt { color: var(--dim); }
+      .codeblock code { flex: 1; font-size: 13.5px; color: var(--blue2); overflow-x: auto; white-space: nowrap; }
+      .copy { flex-shrink: 0; border: 1px solid var(--line); background: var(--glass); color: var(--fg); font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: background .2s; font-family: inherit; }
       .copy:hover { background: rgba(255,255,255,0.1); }
       .copy.done { color: var(--blue2); border-color: rgba(29,155,240,0.4); }
-
       .steps { padding-left: 20px; margin: 0; color: var(--muted); font-size: 14.5px; }
       .steps li { margin: 8px 0; }
       .fineprint { color: var(--dim); font-size: 13px; margin: 16px 0 0; }
-      code, kbd {
-        background: rgba(255,255,255,0.07); border: 1px solid var(--line);
-        padding: 1px 6px; border-radius: 6px; font-size: 13px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      }
+      code, kbd { background: rgba(255,255,255,0.07); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* final cta */
+      .final { padding: 80px 0 40px; }
+      .final-card { position: relative; text-align: center; padding: 70px 24px; border-radius: 28px; border: 1px solid rgba(29,155,240,0.25); background: radial-gradient(120% 140% at 50% 0%, rgba(29,155,240,0.16), rgba(255,255,255,0.03)); overflow: hidden; }
+      .final-card h2 { font-size: clamp(30px, 5vw, 52px); font-weight: 850; letter-spacing: -0.03em; margin: 0 0 28px; line-height: 1.05; }
 
       /* footer */
-      footer { border-top: 1px solid var(--line); margin-top: 80px; padding: 36px 24px 60px; }
-      .foot-inner {
-        max-width: 1080px; margin: 0 auto; display: flex; align-items: center;
-        justify-content: space-between; margin-bottom: 16px;
-      }
+      footer { border-top: 1px solid var(--line); margin-top: 40px; padding: 36px 24px 60px; }
+      .foot-inner { max-width: 1120px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: space-between; }
       .foot-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
       .foot-links { display: flex; gap: 20px; color: var(--muted); font-size: 14px; }
       .foot-links a:hover { color: var(--fg); }
-      .fine { max-width: 1080px; margin: 0 auto; color: var(--dim); font-size: 13px; text-align: center; }
+      .fine { max-width: 1120px; margin: 0 auto; color: var(--dim); font-size: 13px; text-align: center; }
 
       @media (max-width: 760px) {
-        .grid { grid-template-columns: 1fr; }
-        .shots { grid-template-columns: 1fr; }
-        .install-grid { grid-template-columns: 1fr; }
+        .bento, .shots, .install-grid { grid-template-columns: 1fr; }
+        .tile.big, .tile.wide { grid-row: auto; grid-column: auto; }
         .nav-links a:not(.ghost-pill) { display: none; }
+        .stat-row { gap: 26px; }
       }
     </style>
   </body>
