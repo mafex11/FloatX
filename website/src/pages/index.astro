@@ -1,6 +1,7 @@
 ---
 const repo = 'https://github.com/mafex11/FloatX';
 const releases = `${repo}/releases`;
+const chromeStore = 'https://chromewebstore.google.com/detail/floatx/jfgopnaklocecdbeodnfpbigkekbagce';
 const brew = 'brew install mafex11/tap/floatx';
 const year = 2026;
 const xglyph =
@@ -170,12 +171,13 @@ const canonical = Astro.site?.href;
               <h3>Browser extension</h3><span class="tag">Chrome · Edge</span>
             </div>
             <p class="ic-desc">Floats your feed in a Picture-in-Picture window. Lighter, but needs the browser open (video shows as a poster).</p>
-            <ol class="steps">
-              <li>Download the <a href={releases}>latest zip</a> and unzip it.</li>
-              <li>Open <code>chrome://extensions</code>.</li>
-              <li>Turn on Developer mode.</li>
-              <li>Click Load unpacked, pick the folder.</li>
-              <li>Open <code>x.com</code> → click the pill (or <kbd>⌥⇧X</kbd>).</li>
+            <a class="store-btn" href={chromeStore}>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 3.5a6.5 6.5 0 0 1 5.6 3.2l-2.8 4.9a3.5 3.5 0 1 0-5.6 0l-2.8-4.9A6.5 6.5 0 0 1 12 5.5ZM6.2 17a6.47 6.47 0 0 1-.7-5.8h5.7a3.48 3.48 0 0 0 1.4 2.4L9.8 19a6.47 6.47 0 0 1-3.6-2Zm8 2-2.8-4.9a3.5 3.5 0 0 0 2.8-1.4l2.8 4.9A6.47 6.47 0 0 1 14.2 19Z"/></svg>
+              Add to Chrome
+            </a>
+            <ol class="steps ext-steps">
+              <li>Click the button above to install from the Chrome Web Store.</li>
+              <li>Open <code>x.com</code> → click the FloatX pill (or press <kbd>⌥⇧X</kbd>).</li>
             </ol>
           </div>
         </div>
@@ -336,7 +338,11 @@ const canonical = Astro.site?.href;
       .copy.done { background: #34c759; }
       .steps { padding-left: 20px; margin: 0; color: var(--muted); font-size: 15px; }
       .steps li { margin: 9px 0; line-height: 1.45; }
+      .ext-steps { margin-top: 18px; }
       .fineprint { color: var(--muted); font-size: 13px; margin: 18px 0 0; }
+      .store-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--blue); color: #fff; font-size: 15px; font-weight: 500; padding: 12px 22px; border-radius: 10px; transition: background .2s; }
+      .store-btn:hover { background: var(--blue-hover); }
+      .store-btn svg { width: 20px; height: 20px; }
       code, kbd { background: var(--bg-alt); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; font-size: 13px; font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace; }
 
       /* ===== closing ===== */
