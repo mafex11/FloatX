@@ -6,6 +6,15 @@ const year = 2026;
 const xglyph =
   "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z";
 
+// Lucide icon paths (stroke), per ui-ux-pro-max: SVG icons, never emoji.
+const icons: Record<string, string> = {
+  infinity: '<path d="M12 12c-2-2.7-4-4-6-4a4 4 0 0 0 0 8c2 0 4-1.3 6-4Zm0 0c2 2.7 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.3-6 4Z"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  play: '<path d="M6 4.5v15l13-7.5z"/>',
+  layers: '<path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/>',
+  hand: '<path d="M9 11V5a1.5 1.5 0 0 1 3 0v6m0-1V4a1.5 1.5 0 0 1 3 0v7m0-2a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.5l-2.5-4a1.6 1.6 0 0 1 2.7-1.7L9 14"/>',
+};
+
 // Floating mini-posts that drift in the hero background.
 const drifters = [
   { n: "Mafex", h: "devmafex", t: "building floatX in public ", x: "6%", y: "18%", d: "0s", dur: "22s" },
@@ -27,6 +36,11 @@ const drifters = [
     <meta property="og:image" content="/assets/hero.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href={`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path transform='translate(2.4,0) scale(0.8)' fill='%23f2f4f7' d='${xglyph}'/><rect x='5' y='21.2' width='14' height='2' rx='1' fill='%231d9bf0'/></svg>`} />
+    <!-- Type: Space Grotesk (headings) + DM Sans (body) — "Tech Startup" pairing
+         for developer tools, per the ui-ux-pro-max design system. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <!-- animated background layers -->
@@ -121,31 +135,31 @@ const drifters = [
 
         <div class="bento">
           <div class="tile big reveal tilt">
-            <div class="ic">∞</div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={icons.infinity}></svg></div>
             <h3>No API. No cost.</h3>
             <p>FloatX reads your already-logged-in X session — nothing to pay for, nothing to authorize, nothing leaves your machine. Ever.</p>
             <div class="tile-glow"></div>
           </div>
           <div class="tile reveal tilt" style="--d:.06s">
-            <div class="ic">◷</div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={icons.clock}></svg></div>
             <h3>Ambient</h3>
             <p>Auto-advances on your interval — seconds to hours.</p>
             <div class="tile-glow"></div>
           </div>
           <div class="tile reveal tilt" style="--d:.12s">
-            <div class="ic">▶</div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="currentColor" set:html={icons.play}></svg></div>
             <h3>Inline video</h3>
             <p>X videos play right in the widget, then move on when done.</p>
             <div class="tile-glow"></div>
           </div>
           <div class="tile wide reveal tilt" style="--d:.06s">
-            <div class="ic">◳</div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={icons.layers}></svg></div>
             <h3>Liquid Glass, native</h3>
             <p>A real macOS glass widget — resizable S/M/L/XL, adjustable transparency, and a desktop mode that pins it to your wallpaper.</p>
             <div class="tile-glow"></div>
           </div>
           <div class="tile reveal tilt" style="--d:.12s">
-            <div class="ic">↔</div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={icons.hand}></svg></div>
             <h3>Your controls</h3>
             <p>Prev · pause · next on hover. Like, repost, translate in a tap.</p>
             <div class="tile-glow"></div>
@@ -293,8 +307,11 @@ const drifters = [
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation: none !important; transition: none !important; } }
       body {
         margin: 0; background: var(--bg); color: var(--fg); overflow-x: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
         line-height: 1.55; -webkit-font-smoothing: antialiased;
+      }
+      h1, h2, h3, .brand span, .marquee span, .stat-row b {
+        font-family: 'Space Grotesk', 'DM Sans', sans-serif;
       }
       a { color: inherit; text-decoration: none; }
 
@@ -400,7 +417,8 @@ const drifters = [
       .tile.wide { grid-column: span 2; }
       .tile-glow { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s; background: radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(29,155,240,0.16), transparent 60%); }
       .tile:hover .tile-glow { opacity: 1; }
-      .ic { width: 44px; height: 44px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; background: linear-gradient(140deg, rgba(108,197,255,0.28), rgba(29,155,240,0.12)); border: 1px solid rgba(29,155,240,0.25); font-size: 20px; color: var(--blue2); }
+      .ic { width: 44px; height: 44px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; background: linear-gradient(140deg, rgba(108,197,255,0.28), rgba(29,155,240,0.12)); border: 1px solid rgba(29,155,240,0.25); color: var(--blue2); }
+      .ic svg { width: 22px; height: 22px; }
       .tile h3 { margin: 0 0 8px; font-size: 18px; }
       .tile.big h3 { font-size: 24px; }
       .tile p { margin: 0; color: var(--muted); font-size: 14.5px; }
